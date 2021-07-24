@@ -208,7 +208,7 @@ namespace Namingway {
                     this.DrawIcon(action.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
 
                     ImGui.TableNextColumn();
-                    ImGui.TextUnformatted(action.Name.ToString());
+                    ImGui.TextUnformatted(GetActionName(action));
 
                     ImGui.TableNextColumn();
                     ImGui.TextUnformatted(entry.Value);
@@ -307,7 +307,7 @@ namespace Namingway {
                     this.DrawIcon(action.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
 
                     ImGui.TableNextColumn();
-                    ImGui.TextUnformatted(action.Name.ToString());
+                    ImGui.TextUnformatted(GetActionName(action));
 
                     ImGui.TableNextColumn();
                     ImGui.TextUnformatted(entry.Value);
@@ -339,7 +339,7 @@ namespace Namingway {
                     }
 
                     foreach (var action in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()) {
-                        if (!action.IsPlayerAction || action.Icon == 0) {
+                        if (action.Icon == 0 || action.Name.RawString.Length == 0 || (action.ClassJobCategory.Value?.Name?.RawString?.Length ?? 0) == 0) {
                             continue;
                         }
 
@@ -359,7 +359,7 @@ namespace Namingway {
 
                         this.DrawIcon(action.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
                         ImGui.SameLine();
-                        ImGui.TextUnformatted($"{action.Name}");
+                        ImGui.TextUnformatted(GetActionName(action));
                     }
 
                     ImGui.EndCombo();
@@ -521,6 +521,18 @@ namespace Namingway {
             var ratio = ImGui.GetTextLineHeightWithSpacing() / icon.Height;
             var size = new Vector2(icon.Width * ratio, icon.Height * ratio);
             ImGui.Image(icon.ImGuiHandle, size);
+        }
+
+        private static string GetActionName(Lumina.Excel.GeneratedSheets.Action action) {
+            return GetName(action.Name.ToString(), action.IsPvP);
+        }
+
+        private static string GetName(string name, bool pvp) {
+            if (pvp) {
+                name += " (PvP)";
+            }
+
+            return name;
         }
     }
 }
