@@ -1,0 +1,146 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using Dalamud.Hooking;
+
+namespace Namingway {
+    internal class Renamer : IDisposable {
+        private static class Signatures {
+            internal const string GetAbilitySheet = "E8 ?? ?? ?? ?? 6B F6 0D";
+            internal const string GetStatusSheet = "E8 ?? ?? ?? ?? 48 89 45 5F";
+        }
+
+        private delegate IntPtr GetAbilitySheetDelegate(uint abilityId);
+
+        private delegate IntPtr GetStatusSheetDelegate(uint effectId);
+
+        private Plugin Plugin { get; }
+        private Dictionary<uint, IntPtr> StatusSheets { get; } = new();
+
+        private GetAbilitySheetDelegate? GetAbilitySheet { get; }
+
+        // private Hook<GetAbilitySheetDelegate>? GetAbilitySheetHook { get; }
+        private Hook<GetStatusSheetDelegate>? GetStatusSheetHook { get; }
+
+        internal Renamer(Plugin plugin) {
+            this.Plugin = plugin;
+
+            if (this.Plugin.Interface.TargetModuleScanner.TryScanText(Signatures.GetAbilitySheet, out var abilityPtr)) {
+                this.GetAbilitySheet = Marshal.GetDelegateForFunctionPointer<GetAbilitySheetDelegate>(abilityPtr);
+            }
+
+            // if (this.Plugin.Interface.TargetModuleScanner.TryScanText(Signatures.GetAbilitySheet, out var abilityPtr)) {
+            //     this.GetAbilitySheetHook = new Hook<GetAbilitySheetDelegate>(abilityPtr, this.GetAbilitySheetDetour);
+            //     this.GetAbilitySheetHook.Enable();
+            // }
+
+            if (this.Plugin.Interface.TargetModuleScanner.TryScanText(Signatures.GetStatusSheet, out var statusPtr)) {
+                this.GetStatusSheetHook = new Hook<GetStatusSheetDelegate>(statusPtr, this.GetStatusSheetDetour);
+                this.GetStatusSheetHook.Enable();
+            }
+        }
+
+        public void Dispose() {
+            // this.GetAbilitySheetHook?.Dispose();
+            this.GetStatusSheetHook?.Dispose();
+
+            foreach (var ptr in this.StatusSheets.Values) {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
+
+        internal void RestoreAbility(uint abilityId) {
+            var name = this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>().GetRow(abilityId)?.Name;
+            if (name == null) {
+                return;
+            }
+
+            this.RenameAbility(abilityId, name.ToString());
+        }
+
+        internal void RenameAbility(uint abilityId, string name) {
+            if (this.GetAbilitySheet == null) {
+                return;
+            }
+
+            var data = this.GetAbilitySheet(abilityId);
+            if (data == IntPtr.Zero) {
+                return;
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(name);
+            var offset = Marshal.ReadByte(data);
+            Marshal.Copy(bytes, 0, data + offset, bytes.Length);
+            Marshal.WriteByte(data + offset + bytes.Length, 0);
+        }
+
+        //
+        // private IntPtr GetAbilitySheetDetour(uint abilityId) {
+        //     var data = this.GetAbilitySheetHook!.Original(abilityId);
+        //
+        //     if (data != IntPtr.Zero && this.Plugin.Config.ActiveActions.TryGetValue(abilityId, out var name)) {
+        //         var bytes = Encoding.UTF8.GetBytes(name);
+        //         var offset = Marshal.ReadByte(data);
+        //         Marshal.Copy(bytes, 0, data + offset, bytes.Length);
+        //         Marshal.WriteByte(data + offset + bytes.Length, 0);
+        //     }
+        //
+        //     return data;
+        // }
+
+        private IntPtr GetStatusSheetDetour(uint statusId) {
+            const int nameOffset = 24;
+            const int descOffset = 28;
+            const int icon = 32;
+
+            var data = this.GetStatusSheetHook!.Original(statusId);
+
+            if (this.Plugin.Config.ActiveStatuses.TryGetValue(statusId, out var name)) {
+                if (this.StatusSheets.TryGetValue(statusId, out var cached)) {
+                    return cached + nameOffset;
+                }
+
+                var raw = new byte[128];
+                Marshal.Copy(data - nameOffset, raw, 0, raw.Length);
+                var nameBytes = Encoding.UTF8.GetBytes(name);
+                var descBytes = Util.ReadRawBytes(data + raw[descOffset] + 4);
+                var post = raw[0] + nameBytes.Length + 1 + descBytes.Length + 1;
+
+                var newData = new byte[256];
+
+                // copy over unknown stuff
+                for (var i = 0; i < 52; i++) {
+                    newData[i] = raw[i];
+                }
+
+                newData[nameOffset] = 0x1C;
+                newData[descOffset] = (byte) (newData[nameOffset] + nameBytes.Length + 1 - 4);
+
+                // copy icon
+                for (var i = 0; i < 4; i++) {
+                    newData[icon + i] = raw[icon + i];
+                }
+
+                // copy name
+                for (var i = 0; i < nameBytes.Length; i++) {
+                    newData[nameOffset + newData[nameOffset] + i] = nameBytes[i];
+                }
+
+                // copy description
+                for (var i = 0; i < descBytes.Length; i++) {
+                    newData[descOffset + newData[descOffset] + i] = descBytes[i];
+                }
+
+                var newSheet = Marshal.AllocHGlobal(newData.Length);
+                Marshal.Copy(newData, 0, newSheet, newData.Length);
+
+                this.StatusSheets[statusId] = newSheet;
+                return newSheet + nameOffset;
+            }
+
+            return data;
+        }
+    }
+}
