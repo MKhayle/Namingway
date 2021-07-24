@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Version>1.0.0</Version>
         <TargetFramework>net48</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
@@ -32,6 +33,10 @@
             <HintPath>$(AppData)\XIVLauncher\addon\Hooks\5.2.7.0\Newtonsoft.Json.dll</HintPath>
             <Private>False</Private>
         </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DalamudPackager" Version="1.2.2"/>
     </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Interface;
 using ImGuiNET;
 using ImGuiScene;
 
@@ -225,10 +226,11 @@ namespace Namingway {
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Delete##pack")) {
+                if (Util.IconButton(FontAwesomeIcon.Trash, "pack")) {
                     this._editing = false;
                     this._pack = null;
                     this.Plugin.Config.CustomPacks.Remove(pack);
+                    this.Plugin.Config.EnabledPacks.Remove(pack.Id);
                     this.Plugin.SaveConfig();
                     return;
                 }
@@ -264,7 +266,7 @@ namespace Namingway {
                     ImGui.TextUnformatted(entry.Value);
 
                     ImGui.TableNextColumn();
-                    if (ImGui.Button($"Delete##action-{entry.Key}")) {
+                    if (Util.IconButton(FontAwesomeIcon.Trash, $"action-{entry.Key}")) {
                         remove = entry.Key;
                     }
                 }
@@ -284,12 +286,13 @@ namespace Namingway {
                 ImGui.TableNextColumn();
                 ImGui.SetNextItemWidth(-1);
                 if (ImGui.BeginCombo("##edit-action", editAction?.Name?.ToString() ?? string.Empty)) {
+                    ImGui.SetNextItemWidth(-1);
                     if (ImGui.InputText("##edit-action-search", ref this._editActionSearch, 100)) {
                         this._editActionId = 0;
                     }
 
                     foreach (var action in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()) {
-                        if (!action.IsPlayerAction) {
+                        if (!action.IsPlayerAction || action.Icon == 0) {
                             continue;
                         }
 
@@ -316,10 +319,11 @@ namespace Namingway {
                 }
 
                 ImGui.TableNextColumn();
+                ImGui.SetNextItemWidth(-1);
                 ImGui.InputText("##edit-action-name", ref this._editActionName, 100);
 
                 ImGui.TableNextColumn();
-                if (ImGui.Button("Add##action") && this._editActionId > 0 && this._editActionName.Length > 0) {
+                if (Util.IconButton(FontAwesomeIcon.Plus, "action") && this._editActionId > 0 && this._editActionName.Length > 0) {
                     pack.Actions[this._editActionId] = this._editActionName;
                     this._editActionId = 0;
                     this._editActionName = string.Empty;
@@ -358,7 +362,7 @@ namespace Namingway {
                     ImGui.TextUnformatted(entry.Value);
 
                     ImGui.TableNextColumn();
-                    if (ImGui.Button($"Delete##status-{entry.Key}")) {
+                    if (Util.IconButton(FontAwesomeIcon.Trash, $"status-{entry.Key}")) {
                         remove = entry.Key;
                     }
                 }
@@ -378,12 +382,13 @@ namespace Namingway {
                 ImGui.TableNextColumn();
                 ImGui.SetNextItemWidth(-1);
                 if (ImGui.BeginCombo("##edit-status", editStatus?.Name?.ToString() ?? string.Empty)) {
+                    ImGui.SetNextItemWidth(-1);
                     if (ImGui.InputText("##edit-status-search", ref this._editStatusSearch, 100)) {
                         this._editStatusId = 0;
                     }
 
                     foreach (var status in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()) {
-                        if (status.RowId == 0) {
+                        if (status.Icon == 0) {
                             continue;
                         }
 
@@ -410,10 +415,11 @@ namespace Namingway {
                 }
 
                 ImGui.TableNextColumn();
+                ImGui.SetNextItemWidth(-1);
                 ImGui.InputText("##edit-status-name", ref this._editStatusName, 100);
 
                 ImGui.TableNextColumn();
-                if (ImGui.Button("Add##status") && this._editStatusId > 0 && this._editStatusName.Length > 0) {
+                if (Util.IconButton(FontAwesomeIcon.Plus, "status") && this._editStatusId > 0 && this._editStatusName.Length > 0) {
                     pack.Statuses[this._editStatusId] = this._editStatusName;
                     this._editStatusId = 0;
                     this._editStatusName = string.Empty;

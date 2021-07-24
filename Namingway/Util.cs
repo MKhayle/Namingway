@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dalamud.Game;
+using Dalamud.Interface;
+using ImGuiNET;
 
 namespace Namingway {
     internal static class Util {
@@ -24,6 +26,21 @@ namespace Namingway {
             }
 
             return bytes.ToArray();
+        }
+
+        internal static bool IconButton(FontAwesomeIcon icon, string? id = null) {
+            var label = icon.ToIconString();
+            if (id != null) {
+                label += $"##{id}";
+            }
+
+            ImGui.PushFont(UiBuilder.IconFont);
+
+            var ret = ImGui.Button(label);
+
+            ImGui.PopFont();
+
+            return ret;
         }
     }
 }

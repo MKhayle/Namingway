@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Hooking;
+using Dalamud.Plugin;
 
 namespace Namingway {
     internal class Renamer : IDisposable {
@@ -91,32 +91,44 @@ namespace Namingway {
         // }
 
         private IntPtr GetStatusSheetDetour(uint statusId) {
-            const int nameOffset = 24;
-            const int descOffset = 28;
-            const int icon = 32;
-
             var data = this.GetStatusSheetHook!.Original(statusId);
+
+            try {
+                return this.GetStatusSheetDetourInner(statusId, data);
+            } catch (Exception ex) {
+                PluginLog.LogError(ex, "Exception in GetStatusSheetDetour");
+            }
+
+            return data;
+        }
+
+        private IntPtr GetStatusSheetDetourInner(uint statusId, IntPtr data) {
+            const int nameOffset = 0;
+            const int descOffset = 4;
+            const int icon = 8;
 
             if (this.Plugin.Config.ActiveStatuses.TryGetValue(statusId, out var name)) {
                 if (this.StatusSheets.TryGetValue(statusId, out var cached)) {
                     return cached + nameOffset;
                 }
 
-                var raw = new byte[128];
+                var raw = new byte[1024];
                 Marshal.Copy(data - nameOffset, raw, 0, raw.Length);
                 var nameBytes = Encoding.UTF8.GetBytes(name);
+                var oldName = Util.ReadRawBytes(data + raw[nameOffset]);
                 var descBytes = Util.ReadRawBytes(data + raw[descOffset] + 4);
-                var post = raw[0] + nameBytes.Length + 1 + descBytes.Length + 1;
+                var oldPost = raw[nameOffset] + oldName.Length + 1 + descBytes.Length + 1;
+                var newPost = raw[nameOffset] + nameBytes.Length + 1 + descBytes.Length + 1;
 
-                var newData = new byte[256];
+                var newData = new byte[1536];
 
-                // copy over unknown stuff
-                for (var i = 0; i < 52; i++) {
+                // copy over header
+                for (var i = 0; i < nameOffset + raw[nameOffset]; i++) {
                     newData[i] = raw[i];
                 }
 
                 newData[nameOffset] = 0x1C;
-                newData[descOffset] = (byte) (newData[nameOffset] + nameBytes.Length + 1 - 4);
+                newData[descOffset] = (byte) (nameOffset + newData[nameOffset] + nameBytes.Length + 1 - 4);
 
                 // copy icon
                 for (var i = 0; i < 4; i++) {
@@ -131,6 +143,11 @@ namespace Namingway {
                 // copy description
                 for (var i = 0; i < descBytes.Length; i++) {
                     newData[descOffset + newData[descOffset] + i] = descBytes[i];
+                }
+
+                // copy post-description info
+                for (var i = 0; i < raw.Length - oldPost; i++) {
+                    newData[newPost + i] = raw[oldPost + i];
                 }
 
                 var newSheet = Marshal.AllocHGlobal(newData.Length);
