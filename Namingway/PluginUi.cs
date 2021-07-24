@@ -5,6 +5,7 @@ using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
 using ImGuiScene;
+using Newtonsoft.Json;
 
 namespace Namingway {
     internal class PluginUi : IDisposable {
@@ -15,6 +16,8 @@ namespace Namingway {
 
         private Pack? _pack;
         private bool _editing;
+        private string _importJson = string.Empty;
+        private Pack? _importPack;
 
         internal PluginUi(Plugin plugin) {
             this.Plugin = plugin;
@@ -36,6 +39,8 @@ namespace Namingway {
             this.DrawSettings = true;
         }
 
+        #region Drawing
+
         private void Draw() {
             if (!this.DrawSettings) {
                 return;
@@ -49,12 +54,54 @@ namespace Namingway {
 
             if (ImGui.BeginMenuBar()) {
                 if (ImGui.BeginMenu("Pack")) {
-                    if (ImGui.MenuItem("Add")) {
+                    ImGui.PushID("pack-menu");
+
+                    if (ImGui.MenuItem("New")) {
                         this.Plugin.Config.CustomPacks.Add(new Pack("Untitled Pack") {
                             Id = Guid.NewGuid(),
                         });
                     }
 
+                    if (ImGui.BeginMenu("Import")) {
+                        ImGui.SetNextItemWidth(250);
+                        if (ImGui.InputText("##import-json", ref this._importJson, 1024)) {
+                            try {
+                                this._importPack = JsonConvert.DeserializeObject<Pack>(this._importJson);
+                            } catch (JsonException) {
+                                this._importPack = null;
+                            }
+                        }
+
+                        if (this._importPack != null) {
+                            ImGui.TextUnformatted($"Name: {this._importPack.Name}");
+                            ImGui.TextUnformatted($"Actions: {this._importPack.Actions.Count}");
+                            ImGui.TextUnformatted($"Status effects: {this._importPack.Statuses.Count}");
+
+                            var existing = this.Plugin.Config.FindEnabledPack(this._importPack.Id);
+                            if (existing != null) {
+                                ImGui.TextUnformatted($"A pack with this ID already exists: {existing.Name}.");
+                            } else if (ImGui.Button("Import##import-button")) {
+                                this.Plugin.Config.CustomPacks.Add(this._importPack);
+                                this._importPack = null;
+                                this._importJson = string.Empty;
+                                this.Plugin.SaveConfig();
+                            }
+                        }
+
+                        ImGui.EndMenu();
+                    }
+
+                    if (ImGui.BeginMenu("Export")) {
+                        foreach (var pack in this.Plugin.Config.CustomPacks) {
+                            if (ImGui.MenuItem($"{pack.Name}##{pack.Id}")) {
+                                ExportPack(pack);
+                            }
+                        }
+
+                        ImGui.EndMenu();
+                    }
+
+                    ImGui.PopID();
                     ImGui.EndMenu();
                 }
 
@@ -427,6 +474,13 @@ namespace Namingway {
 
                 ImGui.EndTable();
             }
+        }
+
+        #endregion Drawing
+
+        private static void ExportPack(Pack pack) {
+            var json = JsonConvert.SerializeObject(pack);
+            ImGui.SetClipboardText(json);
         }
 
         private TextureWrap? GetIcon(uint id) {
