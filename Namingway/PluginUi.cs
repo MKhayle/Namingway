@@ -5,12 +5,16 @@ using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
 using ImGuiScene;
+using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 
 namespace Namingway {
     internal class PluginUi : IDisposable {
         private Plugin Plugin { get; }
         private Dictionary<uint, TextureWrap> Icons { get; } = new();
+        private Dictionary<uint, ActionIndirection> Indirections { get; } = new();
+        private HashSet<uint> ZadnorActions { get; } = new();
+        private HashSet<uint> EurekaActions { get; } = new();
 
         internal bool DrawSettings;
 
@@ -24,6 +28,9 @@ namespace Namingway {
 
             this.Plugin.Interface.UiBuilder.OnBuildUi += this.Draw;
             this.Plugin.Interface.UiBuilder.OnOpenConfigUi += this.OnOpenConfig;
+
+            this.FilterActions();
+            this.FilterStatuses();
         }
 
         public void Dispose() {
@@ -99,6 +106,24 @@ namespace Namingway {
                         }
 
                         ImGui.EndMenu();
+                    }
+
+                    ImGui.PopID();
+                    ImGui.EndMenu();
+                }
+
+                if (ImGui.BeginMenu("Options")) {
+                    ImGui.PushID("options-menu");
+
+                    var anyChanged = false;
+
+                    if (ImGui.MenuItem("Only show player actions", null, ref this.Plugin.Config.OnlyPlayerActions)) {
+                        this.FilterActions();
+                        anyChanged = true;
+                    }
+
+                    if (anyChanged) {
+                        this.Plugin.SaveConfig();
                     }
 
                     ImGui.PopID();
@@ -335,31 +360,46 @@ namespace Namingway {
                 if (ImGui.BeginCombo("##edit-action", editAction?.Name?.ToString() ?? string.Empty)) {
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.InputText("##edit-action-search", ref this._editActionSearch, 100)) {
+                        this.FilterActions();
                         this._editActionId = 0;
                     }
 
-                    foreach (var action in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()) {
-                        if (action.Icon == 0 || action.Name.RawString.Length == 0 || (action.ClassJobCategory.Value?.Name?.RawString?.Length ?? 0) == 0) {
-                            continue;
+                    ImGuiListClipperPtr clipper;
+                    unsafe {
+                        clipper = ImGuiNative.ImGuiListClipper_ImGuiListClipper();
+                    }
+
+                    clipper.Begin(this.FilteredActions.Count);
+
+                    while (clipper.Step()) {
+                        for (var i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+                            var action = this.FilteredActions[i];
+
+                            var contained = pack.Actions.ContainsKey(action.RowId);
+                            var flags = contained
+                                ? ImGuiSelectableFlags.Disabled
+                                : ImGuiSelectableFlags.None;
+
+                            if (contained) {
+                                unsafe {
+                                    ImGui.PushStyleColor(ImGuiCol.Text, *ImGui.GetStyleColorVec4(ImGuiCol.TextDisabled));
+                                }
+                            }
+
+                            if (ImGui.Selectable($"##action-{action.Name}##{action.RowId}", false, flags)) {
+                                this._editActionId = action.RowId;
+                            }
+
+                            ImGui.SameLine();
+
+                            this.DrawIcon(action.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
+                            ImGui.SameLine();
+                            ImGui.TextUnformatted(GetActionName(action));
+
+                            if (contained) {
+                                ImGui.PopStyleColor();
+                            }
                         }
-
-                        if (pack.Actions.ContainsKey(action.RowId)) {
-                            continue;
-                        }
-
-                        if (this._editActionSearch.Length > 0 && !action.Name.ToString().ToLowerInvariant().Contains(this._editActionSearch.ToLowerInvariant())) {
-                            continue;
-                        }
-
-                        if (ImGui.Selectable($"##action-{action.Name}##{action.RowId}")) {
-                            this._editActionId = action.RowId;
-                        }
-
-                        ImGui.SameLine();
-
-                        this.DrawIcon(action.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
-                        ImGui.SameLine();
-                        ImGui.TextUnformatted(GetActionName(action));
                     }
 
                     ImGui.EndCombo();
@@ -432,30 +472,44 @@ namespace Namingway {
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.InputText("##edit-status-search", ref this._editStatusSearch, 100)) {
                         this._editStatusId = 0;
+                        this.FilterStatuses();
                     }
 
-                    foreach (var status in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()) {
-                        if (status.Icon == 0) {
-                            continue;
+                    ImGuiListClipperPtr clipper;
+                    unsafe {
+                        clipper = ImGuiNative.ImGuiListClipper_ImGuiListClipper();
+                    }
+
+                    clipper.Begin(this.FilteredStatuses.Count);
+                    while (clipper.Step()) {
+                        for (var i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+                            var status = this.FilteredStatuses[i];
+
+                            var contained = pack.Statuses.ContainsKey(status.RowId);
+                            var flags = contained
+                                ? ImGuiSelectableFlags.Disabled
+                                : ImGuiSelectableFlags.None;
+
+                            if (contained) {
+                                unsafe {
+                                    ImGui.PushStyleColor(ImGuiCol.Text, *ImGui.GetStyleColorVec4(ImGuiCol.TextDisabled));
+                                }
+                            }
+
+                            if (ImGui.Selectable($"##status-{status.Name}##{status.RowId}", false, flags)) {
+                                this._editStatusId = status.RowId;
+                            }
+
+                            ImGui.SameLine();
+
+                            this.DrawRatioIcon(status.Icon);
+                            ImGui.SameLine();
+                            ImGui.TextUnformatted($"{status.Name}");
+
+                            if (contained) {
+                                ImGui.PopStyleColor();
+                            }
                         }
-
-                        if (pack.Statuses.ContainsKey(status.RowId)) {
-                            continue;
-                        }
-
-                        if (this._editStatusSearch.Length > 0 && !status.Name.ToString().ToLowerInvariant().Contains(this._editStatusSearch.ToLowerInvariant())) {
-                            continue;
-                        }
-
-                        if (ImGui.Selectable($"##status-{status.Name}##{status.RowId}")) {
-                            this._editStatusId = status.RowId;
-                        }
-
-                        ImGui.SameLine();
-
-                        this.DrawRatioIcon(status.Icon);
-                        ImGui.SameLine();
-                        ImGui.TextUnformatted($"{status.Name}");
                     }
 
                     ImGui.EndCombo();
@@ -477,6 +531,85 @@ namespace Namingway {
         }
 
         #endregion Drawing
+
+        private List<Lumina.Excel.GeneratedSheets.Action> FilteredActions { get; } = new();
+        private List<Lumina.Excel.GeneratedSheets.Status> FilteredStatuses { get; } = new();
+
+        private void FilterActions() {
+            if (this.Indirections.Count == 0) {
+                foreach (var indirection in this.Plugin.Interface.Data.GetExcelSheet<ActionIndirection>()) {
+                    if (indirection.Name.Row == 0) {
+                        continue;
+                    }
+
+                    this.Indirections[indirection.Name.Row] = indirection;
+                }
+            }
+
+            if (this.ZadnorActions.Count == 0) {
+                foreach (var myc in this.Plugin.Interface.Data.GetExcelSheet<MYCTemporaryItem>()) {
+                    if (myc.Action.Row == 0) {
+                        continue;
+                    }
+
+                    this.ZadnorActions.Add(myc.Action.Row);
+                }
+            }
+
+            if (this.EurekaActions.Count == 0) {
+                foreach (var eureka in this.Plugin.Interface.Data.GetExcelSheet<EurekaMagiaAction>()) {
+                    if (eureka.Action.Row == 0) {
+                        continue;
+                    }
+
+                    this.EurekaActions.Add(eureka.Action.Row);
+                }
+            }
+
+            this.FilteredActions.Clear();
+
+            foreach (var action in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()) {
+                if (this.Plugin.Config.OnlyPlayerActions && !action.IsPlayerAction) {
+                    var allow = this.Indirections.TryGetValue(action.RowId, out var indirection) && indirection.ClassJob.Row != uint.MaxValue
+                                || this.ZadnorActions.Contains(action.RowId)
+                                || this.EurekaActions.Contains(action.RowId);
+
+                    if (!allow) {
+                        continue;
+                    }
+                }
+
+                if (action.Icon == 0 || action.Name.RawString.Length == 0) {
+                    continue;
+                }
+
+                if (this.Plugin.Config.OnlyPlayerActions && (action.ClassJobCategory.Value?.Name?.RawString?.Length ?? 0) == 0) {
+                    continue;
+                }
+
+                if (this._editActionSearch.Length > 0 && !action.Name.ToString().ToLowerInvariant().Contains(this._editActionSearch.ToLowerInvariant())) {
+                    continue;
+                }
+
+                this.FilteredActions.Add(action);
+            }
+        }
+
+        private void FilterStatuses() {
+            this.FilteredStatuses.Clear();
+
+            foreach (var status in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()) {
+                if (status.Icon == 0) {
+                    continue;
+                }
+
+                if (this._editStatusSearch.Length > 0 && !status.Name.ToString().ToLowerInvariant().Contains(this._editStatusSearch.ToLowerInvariant())) {
+                    continue;
+                }
+
+                this.FilteredStatuses.Add(status);
+            }
+        }
 
         private static void ExportPack(Pack pack) {
             var json = JsonConvert.SerializeObject(pack);

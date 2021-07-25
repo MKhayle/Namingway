@@ -9,6 +9,8 @@ namespace Namingway {
     public class Configuration : IPluginConfiguration {
         public int Version { get; set; } = 1;
 
+        public bool OnlyPlayerActions = true;
+
         public HashSet<Guid> EnabledPacks { get; set; } = new();
         public List<Pack> CustomPacks { get; set; } = new();
 
