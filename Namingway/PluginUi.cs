@@ -26,23 +26,23 @@ namespace Namingway {
         internal PluginUi(Plugin plugin) {
             this.Plugin = plugin;
 
-            this.Plugin.Interface.UiBuilder.OnBuildUi += this.Draw;
-            this.Plugin.Interface.UiBuilder.OnOpenConfigUi += this.OnOpenConfig;
+            this.Plugin.Interface.UiBuilder.Draw += this.Draw;
+            this.Plugin.Interface.UiBuilder.OpenConfigUi += this.OnOpenConfig;
 
             this.FilterActions();
             this.FilterStatuses();
         }
 
         public void Dispose() {
-            this.Plugin.Interface.UiBuilder.OnOpenConfigUi -= this.OnOpenConfig;
-            this.Plugin.Interface.UiBuilder.OnBuildUi -= this.Draw;
+            this.Plugin.Interface.UiBuilder.OpenConfigUi -= this.OnOpenConfig;
+            this.Plugin.Interface.UiBuilder.Draw -= this.Draw;
 
             foreach (var icon in this.Icons.Values) {
                 icon.Dispose();
             }
         }
 
-        private void OnOpenConfig(object sender, EventArgs e) {
+        private void OnOpenConfig() {
             this.DrawSettings = true;
         }
 
@@ -54,7 +54,7 @@ namespace Namingway {
             }
 
             ImGui.SetNextWindowSize(new Vector2(450, 400), ImGuiCond.FirstUseEver);
-            if (!ImGui.Begin(DalamudPlugin.PluginName, ref this.DrawSettings, ImGuiWindowFlags.MenuBar)) {
+            if (!ImGui.Begin(this.Plugin.Name, ref this.DrawSettings, ImGuiWindowFlags.MenuBar)) {
                 ImGui.End();
                 return;
             }
@@ -223,8 +223,8 @@ namespace Namingway {
 
                 ImGui.TableHeadersRow();
 
-                foreach (var entry in pack.Actions) {
-                    var action = this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>().GetRow(entry.Key);
+                foreach (var (id, name) in pack.Actions) {
+                    var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(id);
                     if (action == null) {
                         continue;
                     }
@@ -236,7 +236,7 @@ namespace Namingway {
                     ImGui.TextUnformatted(GetActionName(action));
 
                     ImGui.TableNextColumn();
-                    ImGui.TextUnformatted(entry.Value);
+                    ImGui.TextUnformatted(name);
                 }
 
                 ImGui.EndTable();
@@ -253,8 +253,8 @@ namespace Namingway {
 
                 ImGui.TableHeadersRow();
 
-                foreach (var entry in pack.Statuses) {
-                    var status = this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>().GetRow(entry.Key);
+                foreach (var (id, name) in pack.Statuses) {
+                    var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!.GetRow(id);
                     if (status == null) {
                         continue;
                     }
@@ -266,7 +266,7 @@ namespace Namingway {
                     ImGui.TextUnformatted(status.Name.ToString());
 
                     ImGui.TableNextColumn();
-                    ImGui.TextUnformatted(entry.Value);
+                    ImGui.TextUnformatted(name);
                 }
 
                 ImGui.EndTable();
@@ -322,8 +322,8 @@ namespace Namingway {
 
                 var remove = 0u;
 
-                foreach (var entry in pack.Actions) {
-                    var action = this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>().GetRow(entry.Key);
+                foreach (var (id, name) in pack.Actions) {
+                    var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(id);
                     if (action == null) {
                         continue;
                     }
@@ -335,11 +335,11 @@ namespace Namingway {
                     ImGui.TextUnformatted(GetActionName(action));
 
                     ImGui.TableNextColumn();
-                    ImGui.TextUnformatted(entry.Value);
+                    ImGui.TextUnformatted(name);
 
                     ImGui.TableNextColumn();
-                    if (Util.IconButton(FontAwesomeIcon.Trash, $"action-{entry.Key}")) {
-                        remove = entry.Key;
+                    if (Util.IconButton(FontAwesomeIcon.Trash, $"action-{id}")) {
+                        remove = id;
                     }
                 }
 
@@ -349,7 +349,7 @@ namespace Namingway {
 
                 var editAction = this._editActionId == 0
                     ? null
-                    : this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>().GetRow(this._editActionId);
+                    : this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(this._editActionId);
                 ImGui.TableNextColumn();
                 if (editAction != null) {
                     this.DrawIcon(editAction.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
@@ -433,8 +433,8 @@ namespace Namingway {
 
                 var remove = 0u;
 
-                foreach (var entry in pack.Statuses) {
-                    var status = this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>().GetRow(entry.Key);
+                foreach (var (id, name) in pack.Statuses) {
+                    var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!.GetRow(id);
                     if (status == null) {
                         continue;
                     }
@@ -446,11 +446,11 @@ namespace Namingway {
                     ImGui.TextUnformatted(status.Name.ToString());
 
                     ImGui.TableNextColumn();
-                    ImGui.TextUnformatted(entry.Value);
+                    ImGui.TextUnformatted(name);
 
                     ImGui.TableNextColumn();
-                    if (Util.IconButton(FontAwesomeIcon.Trash, $"status-{entry.Key}")) {
-                        remove = entry.Key;
+                    if (Util.IconButton(FontAwesomeIcon.Trash, $"status-{id}")) {
+                        remove = id;
                     }
                 }
 
@@ -460,7 +460,7 @@ namespace Namingway {
 
                 var editStatus = this._editStatusId == 0
                     ? null
-                    : this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>().GetRow(this._editStatusId);
+                    : this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!.GetRow(this._editStatusId);
                 ImGui.TableNextColumn();
                 if (editStatus != null) {
                     this.DrawRatioIcon(editStatus.Icon);
@@ -537,7 +537,7 @@ namespace Namingway {
 
         private void FilterActions() {
             if (this.Indirections.Count == 0) {
-                foreach (var indirection in this.Plugin.Interface.Data.GetExcelSheet<ActionIndirection>()) {
+                foreach (var indirection in this.Plugin.DataManager.GetExcelSheet<ActionIndirection>()!) {
                     if (indirection.Name.Row == 0) {
                         continue;
                     }
@@ -547,7 +547,7 @@ namespace Namingway {
             }
 
             if (this.ZadnorActions.Count == 0) {
-                foreach (var myc in this.Plugin.Interface.Data.GetExcelSheet<MYCTemporaryItem>()) {
+                foreach (var myc in this.Plugin.DataManager.GetExcelSheet<MYCTemporaryItem>()!) {
                     if (myc.Action.Row == 0) {
                         continue;
                     }
@@ -557,7 +557,7 @@ namespace Namingway {
             }
 
             if (this.EurekaActions.Count == 0) {
-                foreach (var eureka in this.Plugin.Interface.Data.GetExcelSheet<EurekaMagiaAction>()) {
+                foreach (var eureka in this.Plugin.DataManager.GetExcelSheet<EurekaMagiaAction>()!) {
                     if (eureka.Action.Row == 0) {
                         continue;
                     }
@@ -568,7 +568,7 @@ namespace Namingway {
 
             this.FilteredActions.Clear();
 
-            foreach (var action in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()) {
+            foreach (var action in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!) {
                 if (this.Plugin.Config.OnlyPlayerActions && !action.IsPlayerAction) {
                     var allow = this.Indirections.TryGetValue(action.RowId, out var indirection) && indirection.ClassJob.Row != uint.MaxValue
                                 || this.ZadnorActions.Contains(action.RowId)
@@ -583,6 +583,7 @@ namespace Namingway {
                     continue;
                 }
 
+                // ReSharper disable once ConstantConditionalAccessQualifier
                 if (this.Plugin.Config.OnlyPlayerActions && (action.ClassJobCategory.Value?.Name?.RawString?.Length ?? 0) == 0) {
                     continue;
                 }
@@ -598,7 +599,7 @@ namespace Namingway {
         private void FilterStatuses() {
             this.FilteredStatuses.Clear();
 
-            foreach (var status in this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()) {
+            foreach (var status in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!) {
                 if (status.Icon == 0) {
                     continue;
                 }
@@ -622,8 +623,12 @@ namespace Namingway {
             }
 
             try {
-                wrap = this.Plugin.Interface.Data.GetImGuiTextureIcon(this.Plugin.Interface.ClientState.ClientLanguage, (int) id);
+                wrap = this.Plugin.DataManager.GetImGuiTextureIcon(this.Plugin.ClientState.ClientLanguage, id);
             } catch (NullReferenceException) {
+                return null;
+            }
+
+            if (wrap == null) {
                 return null;
             }
 

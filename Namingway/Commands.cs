@@ -8,13 +8,13 @@ namespace Namingway {
         internal Commands(Plugin plugin) {
             this.Plugin = plugin;
 
-            this.Plugin.Interface.CommandManager.AddHandler("/namingway", new CommandInfo(this.OnCommand) {
+            this.Plugin.CommandManager.AddHandler("/namingway", new CommandInfo(this.OnCommand) {
                 HelpMessage = "Opens the Namingway interface",
             });
         }
 
         public void Dispose() {
-            this.Plugin.Interface.CommandManager.RemoveHandler("/namingway");
+            this.Plugin.CommandManager.RemoveHandler("/namingway");
         }
 
         private void OnCommand(string command, string arguments) {

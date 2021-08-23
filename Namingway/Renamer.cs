@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
+using Dalamud.Logging;
 
 namespace Namingway {
     internal class Renamer : IDisposable {
@@ -27,7 +27,7 @@ namespace Namingway {
         internal Renamer(Plugin plugin) {
             this.Plugin = plugin;
 
-            if (this.Plugin.Interface.TargetModuleScanner.TryScanText(Signatures.GetAbilitySheet, out var abilityPtr)) {
+            if (this.Plugin.SigScanner.TryScanText(Signatures.GetAbilitySheet, out var abilityPtr)) {
                 this.GetAbilitySheet = Marshal.GetDelegateForFunctionPointer<GetAbilitySheetDelegate>(abilityPtr);
             }
 
@@ -36,7 +36,7 @@ namespace Namingway {
             //     this.GetAbilitySheetHook.Enable();
             // }
 
-            if (this.Plugin.Interface.TargetModuleScanner.TryScanText(Signatures.GetStatusSheet, out var statusPtr)) {
+            if (this.Plugin.SigScanner.TryScanText(Signatures.GetStatusSheet, out var statusPtr)) {
                 this.GetStatusSheetHook = new Hook<GetStatusSheetDelegate>(statusPtr, this.GetStatusSheetDetour);
                 this.GetStatusSheetHook.Enable();
             }
@@ -52,7 +52,7 @@ namespace Namingway {
         }
 
         internal void RestoreAbility(uint abilityId) {
-            var name = this.Plugin.Interface.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>().GetRow(abilityId)?.Name;
+            var name = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(abilityId)?.Name;
             if (name == null) {
                 return;
             }
