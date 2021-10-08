@@ -71,7 +71,7 @@ namespace Namingway {
 
                     if (ImGui.BeginMenu("Import")) {
                         ImGui.SetNextItemWidth(250);
-                        if (ImGui.InputText("##import-json", ref this._importJson, 1024)) {
+                        if (ImGui.InputText("##import-json", ref this._importJson, 5120)) {
                             try {
                                 this._importPack = JsonConvert.DeserializeObject<Pack>(this._importJson);
                             } catch (JsonException) {
