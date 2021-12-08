@@ -13,6 +13,8 @@ namespace Namingway {
                 [(uint) Action.CureII] = "Cura",
                 [(uint) Action.CureIII] = "Curaga",
                 [(uint) Action.MedicaII] = "Medicara",
+                [(uint) Action.GlareIII] = "Glarega",
+                [(uint) Action.HolyIII] = "Holyga",
             },
             Statuses = new Dictionary<uint, string> {
                 [(uint) Status.AeroII] = "Aerora",
@@ -32,6 +34,8 @@ namespace Namingway {
                 [(uint) Action.ThunderII] = "Thundara",
                 [(uint) Action.ThunderIII] = "Thundaga",
                 [(uint) Action.ThunderIV] = "Thundaja",
+                [(uint) Action.HighFireII] = "High Fira",
+                [(uint) Action.HighBlizzardII] = "High Blizzara",
             },
             Statuses = new Dictionary<uint, string> {
                 [(uint) Status.ThunderII] = "Thundara",
@@ -49,6 +53,7 @@ namespace Namingway {
                 [(uint) Action.MaleficII] = "Malefira",
                 [(uint) Action.MaleficIII] = "Malefiga",
                 [(uint) Action.MaleficIV] = "Malefija",
+                [(uint) Action.GravityII] = "Gravira",
             },
             Statuses = new Dictionary<uint, string> {
                 [(uint) Status.CombustII] = "Combustra",
@@ -64,26 +69,27 @@ namespace Namingway {
                 [(uint) Action.SchRuinII] = "Ruinra",
                 [(uint) Action.BroilII] = "Broilra",
                 [(uint) Action.BroilIII] = "Broilga",
+                [(uint) Action.BroilIV] = "Broilja",
             },
             Statuses = new Dictionary<uint, string> {
                 [(uint) Status.BioII] = "Biora",
             },
         };
 
+        private static readonly Pack SpellSuffixSch2 = new("Spell Suffixes (SCH 2)") {
+            Id = new Guid("0E92ACD6-4EAF-4857-9EDE-F76F35F1D415"),
+            Actions = new Dictionary<uint, string> {
+                [(uint) Action.ArtOfWar] = "Scourge",
+                [(uint) Action.ArtOfWarII] = "Scoura",
+            },
+        };
+
         private static readonly Pack SpellSuffixSmn = new("Spell Suffixes (SMN)") {
             Id = new Guid("C10324AE-0A08-4AD6-95B7-389570C34B12"),
             Actions = new Dictionary<uint, string> {
-                [(uint) Action.SmnBioII] = "Biora",
-                [(uint) Action.BioIII] = "Bioga",
-                [(uint) Action.MiasmaIII] = "Miasga",
                 [(uint) Action.SmnRuinII] = "Ruinra",
                 [(uint) Action.RuinIII] = "Ruinga",
                 [(uint) Action.RuinIV] = "Ruinja",
-            },
-            Statuses = new Dictionary<uint, string> {
-                [(uint) Status.BioII] = "Biora",
-                [(uint) Status.BioIII] = "Bioga",
-                [(uint) Status.MiasmaIII] = "Miasga",
             },
         };
 
@@ -92,7 +98,9 @@ namespace Namingway {
             Actions = new Dictionary<uint, string> {
                 [(uint) Action.JoltII] = "Joltra",
                 [(uint) Action.VerthunderII] = "Verthundara",
+                [(uint) Action.VerthunderIII] = "Verthundaga",
                 [(uint) Action.VeraeroII] = "Veraerora",
+                [(uint) Action.VeraeroIII] = "Veraeroga",
             },
         };
 
@@ -109,6 +117,7 @@ namespace Namingway {
             SpellSuffixWhm,
             SpellSuffixAst,
             SpellSuffixSch,
+            SpellSuffixSch2,
             SpellSuffixBlm,
             SpellSuffixSmn,
             SpellSuffixRdm,

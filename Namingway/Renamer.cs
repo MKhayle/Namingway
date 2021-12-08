@@ -8,7 +8,7 @@ using Dalamud.Logging;
 namespace Namingway {
     internal class Renamer : IDisposable {
         private static class Signatures {
-            internal const string GetAbilitySheet = "E8 ?? ?? ?? ?? 6B F6 0D";
+            internal const string GetAbilitySheet = "E8 ?? ?? ?? ?? 80 FB 12";
             internal const string GetStatusSheet = "E8 ?? ?? ?? ?? 48 89 45 5F";
         }
 
