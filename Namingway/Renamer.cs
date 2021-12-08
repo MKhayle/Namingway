@@ -127,7 +127,7 @@ namespace Namingway {
                     newData[i] = raw[i];
                 }
 
-                newData[nameOffset] = 0x1C;
+                newData[nameOffset] = raw[nameOffset];
                 newData[descOffset] = (byte) (nameOffset + newData[nameOffset] + nameBytes.Length + 1 - 4);
 
                 // copy icon
