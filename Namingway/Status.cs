@@ -17,6 +17,11 @@ namespace Namingway {
         CombustIII = 1_881,
         EnhancedBeneficII = 815,
 
+        // SGE
+        EukrasianDosisII = 2_615,
+        EukrasianDosisIII = 2_616,
+        PhysisII = 2_620,
+
         // SMN
         BioII = 189, // also affects SCH
         BioIII = 1_214,

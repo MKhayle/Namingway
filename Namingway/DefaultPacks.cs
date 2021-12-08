@@ -84,6 +84,26 @@ namespace Namingway {
             },
         };
 
+        private static readonly Pack SpellSuffixSge = new("Spell Suffixes (SGE)") {
+            Id = new Guid("4DE99035-4469-4589-84F7-717815F6DDCA"),
+            Actions = new Dictionary<uint, string> {
+                [(uint) Action.DosisII] = "Dosira",
+                [(uint) Action.DosisIII] = "Dosiga",
+                [(uint) Action.EukrasianDosisII] = "Eukrasian Dosira",
+                [(uint) Action.EukrasianDosisIII] = "Eukrasian Dosiga",
+                [(uint) Action.PhlegmaII] = "Phlegmara",
+                [(uint) Action.PhlegmaIII] = "Phlegmaga",
+                [(uint) Action.DyskrasiaII] = "Dyskrasira",
+                [(uint) Action.ToxikonII] = "Toxikira",
+                [(uint) Action.PhysisII] = "Physira",
+            },
+            Statuses = new Dictionary<uint, string> {
+                [(uint) Status.EukrasianDosisII] = "Eukrasian Dosira",
+                [(uint) Status.EukrasianDosisIII] = "Eukrasian Dosiga",
+                [(uint) Status.PhysisII] = "Physira",
+            },
+        };
+
         private static readonly Pack SpellSuffixSmn = new("Spell Suffixes (SMN)") {
             Id = new Guid("C10324AE-0A08-4AD6-95B7-389570C34B12"),
             Actions = new Dictionary<uint, string> {
@@ -118,6 +138,7 @@ namespace Namingway {
             SpellSuffixAst,
             SpellSuffixSch,
             SpellSuffixSch2,
+            SpellSuffixSge,
             SpellSuffixBlm,
             SpellSuffixSmn,
             SpellSuffixRdm,

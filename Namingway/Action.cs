@@ -51,6 +51,17 @@ namespace Namingway {
         BroilIV = 25_865,
         ArtOfWar = 16_539,
         ArtOfWarII = 25_866,
+        
+        // SGE
+        DosisII = 24_306,
+        DosisIII = 24_312,
+        EukrasianDosisII = 24_308,
+        EukrasianDosisIII = 24_314,
+        PhlegmaII = 24_307,
+        PhlegmaIII = 24_313,
+        DyskrasiaII = 24_315,
+        ToxikonII = 24_316,
+        PhysisII = 24_302,
 
         // SMN
         SmnRuinII = 172,
