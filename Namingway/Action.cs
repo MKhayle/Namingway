@@ -67,6 +67,12 @@ namespace Namingway {
         SmnRuinII = 172,
         RuinIII = 3_579,
         RuinIV = 7_426,
+        RubyRuinII = 25_811,
+        RubyRuinIII = 25_817,
+        TopazRuinII = 25_812,
+        TopazRuinIII = 25_818,
+        EmeraldRuinII = 25_813,
+        EmeraldRuinIII = 25_819,
 
         // Bozja
         LostCureII = 20_727,

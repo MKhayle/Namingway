@@ -110,6 +110,12 @@ namespace Namingway {
                 [(uint) Action.SmnRuinII] = "Ruinra",
                 [(uint) Action.RuinIII] = "Ruinga",
                 [(uint) Action.RuinIV] = "Ruinja",
+                [(uint) Action.RubyRuinII] = "Ruby Ruinra",
+                [(uint) Action.RubyRuinIII] = "Ruby Ruinga",
+                [(uint) Action.TopazRuinII] = "Topaz Ruinra",
+                [(uint) Action.TopazRuinIII] = "Topaz Ruinga",
+                [(uint) Action.EmeraldRuinII] = "Emerald Ruinra",
+                [(uint) Action.EmeraldRuinIII] = "Emerald Ruinga",
             },
         };
 
