@@ -359,7 +359,7 @@ namespace Namingway {
                 ImGui.SetNextItemWidth(-1);
                 if (ImGui.BeginCombo("##edit-action", editAction?.Name?.ToString() ?? string.Empty)) {
                     ImGui.SetNextItemWidth(-1);
-                    if (ImGui.InputText("##edit-action-search", ref this._editActionSearch, 100)) {
+                    if (ImGui.InputTextWithHint("##edit-action-search", "Search...", ref this._editActionSearch, 100)) {
                         this.FilterActions();
                         this._editActionId = 0;
                     }
@@ -470,7 +470,7 @@ namespace Namingway {
                 ImGui.SetNextItemWidth(-1);
                 if (ImGui.BeginCombo("##edit-status", editStatus?.Name?.ToString() ?? string.Empty)) {
                     ImGui.SetNextItemWidth(-1);
-                    if (ImGui.InputText("##edit-status-search", ref this._editStatusSearch, 100)) {
+                    if (ImGui.InputTextWithHint("##edit-status-search", "Search...", ref this._editStatusSearch, 100)) {
                         this._editStatusId = 0;
                         this.FilterStatuses();
                     }
