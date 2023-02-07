@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Version>1.1.8</Version>
-        <TargetFramework>net6-windows</TargetFramework>
+        <TargetFramework>net7-windows</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -14,7 +14,8 @@
         <DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev</DalamudLibPath>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
+    <PropertyGroup
+            Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
         <DalamudLibPath>$(DALAMUD_HOME)</DalamudLibPath>
     </PropertyGroup>
 
@@ -50,7 +51,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="DalamudPackager" Version="2.1.8"/>
+        <PackageReference Include="DalamudPackager" Version="2.1.10"/>
     </ItemGroup>
 
 </Project>
