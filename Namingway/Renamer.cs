@@ -37,7 +37,7 @@ namespace Namingway {
             // }
 
             if (this.Plugin.SigScanner.TryScanText(Signatures.GetStatusSheet, out var statusPtr)) {
-                this.GetStatusSheetHook = new Hook<GetStatusSheetDelegate>(statusPtr, this.GetStatusSheetDetour);
+                this.GetStatusSheetHook = Hook<GetStatusSheetDelegate>.FromAddress(statusPtr, this.GetStatusSheetDetour);
                 this.GetStatusSheetHook.Enable();
             }
         }
