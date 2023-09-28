@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 
 namespace Namingway {
     internal class Renamer : IDisposable {
@@ -37,7 +36,7 @@ namespace Namingway {
             // }
 
             if (this.Plugin.SigScanner.TryScanText(Signatures.GetStatusSheet, out var statusPtr)) {
-                this.GetStatusSheetHook = Hook<GetStatusSheetDelegate>.FromAddress(statusPtr, this.GetStatusSheetDetour);
+                this.GetStatusSheetHook = this.Plugin.GameInteropProvider.HookFromAddress<GetStatusSheetDelegate>(statusPtr, this.GetStatusSheetDetour);
                 this.GetStatusSheetHook.Enable();
             }
         }
@@ -96,7 +95,7 @@ namespace Namingway {
             try {
                 return this.GetStatusSheetDetourInner(statusId, data);
             } catch (Exception ex) {
-                PluginLog.LogError(ex, "Exception in GetStatusSheetDetour");
+                Plugin.Log.Error(ex, "Exception in GetStatusSheetDetour");
             }
 
             return data;

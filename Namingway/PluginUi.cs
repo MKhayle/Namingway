@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
+using Dalamud.Interface.Internal;
 using ImGuiNET;
-using ImGuiScene;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 
 namespace Namingway {
     internal class PluginUi : IDisposable {
         private Plugin Plugin { get; }
-        private Dictionary<uint, TextureWrap> Icons { get; } = new();
+        private Dictionary<uint, IDalamudTextureWrap> Icons { get; } = new();
         private Dictionary<uint, ActionIndirection> Indirections { get; } = new();
         private HashSet<uint> ZadnorActions { get; } = new();
         private HashSet<uint> EurekaActions { get; } = new();
@@ -54,7 +54,7 @@ namespace Namingway {
             }
 
             ImGui.SetNextWindowSize(new Vector2(450, 400), ImGuiCond.FirstUseEver);
-            if (!ImGui.Begin(this.Plugin.Name, ref this.DrawSettings, ImGuiWindowFlags.MenuBar)) {
+            if (!ImGui.Begin(Plugin.Name, ref this.DrawSettings, ImGuiWindowFlags.MenuBar)) {
                 ImGui.End();
                 return;
             }
@@ -584,7 +584,7 @@ namespace Namingway {
                 }
 
                 // ReSharper disable once ConstantConditionalAccessQualifier
-                if (this.Plugin.Config.OnlyPlayerActions && (action.ClassJobCategory.Value?.Name?.RawString?.Length ?? 0) == 0) {
+                if (this.Plugin.Config.OnlyPlayerActions && (action.ClassJobCategory.Value?.Name?.RawString.Length ?? 0) == 0) {
                     continue;
                 }
 
@@ -617,13 +617,13 @@ namespace Namingway {
             ImGui.SetClipboardText(json);
         }
 
-        private TextureWrap? GetIcon(uint id) {
+        private IDalamudTextureWrap? GetIcon(uint id) {
             if (this.Icons.TryGetValue(id, out var wrap)) {
                 return wrap;
             }
 
             try {
-                wrap = this.Plugin.DataManager.GetImGuiTextureIcon(this.Plugin.ClientState.ClientLanguage, id);
+                wrap = this.Plugin.TextureProvider.GetIcon(id);
             } catch (NullReferenceException) {
                 return null;
             }

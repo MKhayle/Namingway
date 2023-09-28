@@ -1,29 +1,36 @@
-﻿using Dalamud.Data;
-using Dalamud.Game;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.Command;
+﻿using Dalamud.Game;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 
 namespace Namingway {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class Plugin : IDalamudPlugin {
-        public string Name => "Namingway";
+        internal static string Name => "Namingway";
+
+        [PluginService]
+        internal static IPluginLog Log { get; private set; } = null!;
 
         [PluginService]
         internal DalamudPluginInterface Interface { get; init; } = null!;
 
         [PluginService]
-        internal ClientState ClientState { get; init; } = null!;
+        internal IClientState ClientState { get; init; } = null!;
 
         [PluginService]
-        internal CommandManager CommandManager { get; init; } = null!;
+        internal ICommandManager CommandManager { get; init; } = null!;
 
         [PluginService]
-        internal DataManager DataManager { get; init; } = null!;
+        internal IDataManager DataManager { get; init; } = null!;
 
         [PluginService]
-        internal SigScanner SigScanner { get; init; } = null!;
+        internal ISigScanner SigScanner { get; init; } = null!;
+
+        [PluginService]
+        internal ITextureProvider TextureProvider { get; init; } = null!;
+
+        [PluginService]
+        internal IGameInteropProvider GameInteropProvider { get; init; } = null!;
 
         internal Configuration Config { get; }
         internal Renamer Renamer { get; }
