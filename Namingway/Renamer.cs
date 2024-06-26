@@ -8,7 +8,7 @@ namespace Namingway {
     internal class Renamer : IDisposable {
         private static class Signatures {
             internal const string GetAbilitySheet = "E8 ?? ?? ?? ?? 80 FB 12";
-            internal const string GetStatusSheet = "E8 ?? ?? ?? ?? 48 89 45 5F";
+            internal const string GetStatusSheet = "E8 ?? ?? ?? ?? 0F B7 37";
         }
 
         private delegate IntPtr GetAbilitySheetDelegate(uint abilityId);
