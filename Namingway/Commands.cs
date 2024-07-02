@@ -1,11 +1,12 @@
 ﻿using System;
 using Dalamud.Game.Command;
 
-namespace Namingway {
-    internal class Commands : IDisposable {
-        private Plugin Plugin { get; }
+namespace Namingway;
 
-        internal Commands(Plugin plugin) {
+internal class Commands : IDisposable {
+    private Plugin Plugin { get; }
+
+    internal Commands(Plugin plugin) {
             this.Plugin = plugin;
 
             this.Plugin.CommandManager.AddHandler("/namingway", new CommandInfo(this.OnCommand) {
@@ -13,12 +14,11 @@ namespace Namingway {
             });
         }
 
-        public void Dispose() {
+    public void Dispose() {
             this.Plugin.CommandManager.RemoveHandler("/namingway");
         }
 
-        private void OnCommand(string command, string arguments) {
+    private void OnCommand(string command, string arguments) {
             this.Plugin.Ui.DrawSettings ^= true;
         }
-    }
 }

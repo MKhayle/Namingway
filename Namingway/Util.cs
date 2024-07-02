@@ -4,9 +4,10 @@ using Dalamud.Game;
 using Dalamud.Interface;
 using ImGuiNET;
 
-namespace Namingway {
-    internal static class Util {
-        internal static bool TryScanText(this SigScanner scanner, string sig, out IntPtr result) {
+namespace Namingway;
+
+internal static class Util {
+    internal static bool TryScanText(this SigScanner scanner, string sig, out IntPtr result) {
             result = IntPtr.Zero;
             try {
                 result = scanner.ScanText(sig);
@@ -16,7 +17,7 @@ namespace Namingway {
             }
         }
 
-        internal static unsafe byte[] ReadRawBytes(IntPtr ptr) {
+    internal static unsafe byte[] ReadRawBytes(IntPtr ptr) {
             var bytes = new List<byte>();
 
             var bytePtr = (byte*) ptr;
@@ -28,7 +29,7 @@ namespace Namingway {
             return bytes.ToArray();
         }
 
-        internal static bool IconButton(FontAwesomeIcon icon, string? id = null) {
+    internal static bool IconButton(FontAwesomeIcon icon, string? id = null) {
             var label = icon.ToIconString();
             if (id != null) {
                 label += $"##{id}";
@@ -42,5 +43,4 @@ namespace Namingway {
 
             return ret;
         }
-    }
 }

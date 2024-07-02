@@ -3,65 +3,65 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-namespace Namingway {
-    // ReSharper disable once ClassNeverInstantiated.Global
-    public class Plugin : IDalamudPlugin {
-        internal static string Name => "Namingway";
+namespace Namingway;
 
-        [PluginService]
-        internal static IPluginLog Log { get; private set; } = null!;
+// ReSharper disable once ClassNeverInstantiated.Global
+public class Plugin : IDalamudPlugin {
+    internal static string Name => "Namingway";
 
-        [PluginService]
-        internal IDalamudPluginInterface Interface { get; init; } = null!;
+    [PluginService]
+    internal static IPluginLog Log { get; private set; } = null!;
 
-        [PluginService]
-        internal IClientState ClientState { get; init; } = null!;
+    [PluginService]
+    internal IDalamudPluginInterface Interface { get; init; } = null!;
 
-        [PluginService]
-        internal ICommandManager CommandManager { get; init; } = null!;
+    [PluginService]
+    internal IClientState ClientState { get; init; } = null!;
 
-        [PluginService]
-        internal IDataManager DataManager { get; init; } = null!;
+    [PluginService]
+    internal ICommandManager CommandManager { get; init; } = null!;
 
-        [PluginService]
-        internal ISigScanner SigScanner { get; init; } = null!;
+    [PluginService]
+    internal IDataManager DataManager { get; init; } = null!;
 
-        [PluginService]
-        internal ITextureProvider TextureProvider { get; init; } = null!;
+    [PluginService]
+    internal ISigScanner SigScanner { get; init; } = null!;
 
-        [PluginService]
-        internal IGameInteropProvider GameInteropProvider { get; init; } = null!;
+    [PluginService]
+    internal ITextureProvider TextureProvider { get; init; } = null!;
 
-        internal Configuration Config { get; }
-        internal Renamer Renamer { get; }
-        internal PluginUi Ui { get; }
-        private Commands Commands { get; }
+    [PluginService]
+    internal IGameInteropProvider GameInteropProvider { get; init; } = null!;
 
-        public Plugin() {
-            this.Config = this.Interface.GetPluginConfig() as Configuration ?? new Configuration();
-            this.Config.UpdateActive();
+    internal Configuration Config { get; }
+    internal Renamer Renamer { get; }
+    internal PluginUi Ui { get; }
+    private Commands Commands { get; }
 
-            this.Renamer = new Renamer(this);
-            this.Ui = new PluginUi(this);
-            this.Commands = new Commands(this);
+    public Plugin() {
+        this.Config = this.Interface.GetPluginConfig() as Configuration ?? new Configuration();
+        this.Config.UpdateActive();
 
-            foreach (var pack in this.Config.FindEnabledPacks()) {
-                pack.Enable(this.Renamer);
-            }
+        this.Renamer = new Renamer(this);
+        this.Ui = new PluginUi(this);
+        this.Commands = new Commands(this);
+
+        foreach (var pack in this.Config.FindEnabledPacks()) {
+            pack.Enable(this.Renamer);
+        }
+    }
+
+    public void Dispose() {
+        foreach (var pack in this.Config.FindEnabledPacks()) {
+            pack.Disable(this.Renamer);
         }
 
-        public void Dispose() {
-            foreach (var pack in this.Config.FindEnabledPacks()) {
-                pack.Disable(this.Renamer);
-            }
+        this.Commands.Dispose();
+        this.Ui.Dispose();
+        this.Renamer.Dispose();
+    }
 
-            this.Commands.Dispose();
-            this.Ui.Dispose();
-            this.Renamer.Dispose();
-        }
-
-        internal void SaveConfig() {
-            this.Interface.SavePluginConfig(this.Config);
-        }
+    internal void SaveConfig() {
+        this.Interface.SavePluginConfig(this.Config);
     }
 }

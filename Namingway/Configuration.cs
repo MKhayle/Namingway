@@ -4,22 +4,23 @@ using System.Linq;
 using Dalamud.Configuration;
 using Newtonsoft.Json;
 
-namespace Namingway {
-    [Serializable]
-    public class Configuration : IPluginConfiguration {
-        public int Version { get; set; } = 1;
+namespace Namingway;
 
-        public bool OnlyPlayerActions = true;
+[Serializable]
+public class Configuration : IPluginConfiguration {
+    public int Version { get; set; } = 1;
 
-        public HashSet<Guid> EnabledPacks { get; set; } = [];
-        public List<Pack> CustomPacks { get; set; } = [];
+    public bool OnlyPlayerActions = true;
 
-        [JsonIgnore]
-        internal Dictionary<uint, string> ActiveActions { get; set; } = new();
-        [JsonIgnore]
-        internal Dictionary<uint, string> ActiveStatuses { get; set; } = new();
+    public HashSet<Guid> EnabledPacks { get; set; } = [];
+    public List<Pack> CustomPacks { get; set; } = [];
 
-        internal void UpdateActive() {
+    [JsonIgnore]
+    internal Dictionary<uint, string> ActiveActions { get; set; } = new();
+    [JsonIgnore]
+    internal Dictionary<uint, string> ActiveStatuses { get; set; } = new();
+
+    internal void UpdateActive() {
             var packs = this.EnabledPacks
                 .Select(this.FindEnabledPack)
                 .Where(pack => pack != null)
@@ -40,12 +41,12 @@ namespace Namingway {
                 });
         }
 
-        internal Pack? FindEnabledPack(Guid id) {
+    internal Pack? FindEnabledPack(Guid id) {
             return DefaultPacks.All.FirstOrDefault(pack => pack.Id == id)
                    ?? this.CustomPacks.FirstOrDefault(pack => pack.Id == id);
         }
 
-        internal IEnumerable<Pack> FindEnabledPacks() {
+    internal IEnumerable<Pack> FindEnabledPacks() {
             foreach (var id in this.EnabledPacks) {
                 var pack = this.FindEnabledPack(id);
                 if (pack != null) {
@@ -53,29 +54,28 @@ namespace Namingway {
                 }
             }
         }
-    }
+}
 
-    [Serializable]
-    public class Pack {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public Dictionary<uint, string> Actions { get; set; } = new();
-        public Dictionary<uint, string> Statuses { get; set; } = new();
+[Serializable]
+public class Pack {
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public Dictionary<uint, string> Actions { get; set; } = new();
+    public Dictionary<uint, string> Statuses { get; set; } = new();
 
-        public Pack(string name) {
+    public Pack(string name) {
             this.Name = name;
         }
 
-        internal void Enable(Renamer renamer) {
+    internal void Enable(Renamer renamer) {
             foreach (var entry in this.Actions) {
                 renamer.RenameAbility(entry.Key, entry.Value);
             }
         }
 
-        internal void Disable(Renamer renamer) {
+    internal void Disable(Renamer renamer) {
             foreach (var id in this.Actions.Keys) {
                 renamer.RestoreAbility(id);
             }
         }
-    }
 }
