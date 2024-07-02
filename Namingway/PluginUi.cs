@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
@@ -11,10 +12,9 @@ using Newtonsoft.Json;
 namespace Namingway {
     internal class PluginUi : IDisposable {
         private Plugin Plugin { get; }
-        private Dictionary<uint, IDalamudTextureWrap> Icons { get; } = new();
         private Dictionary<uint, ActionIndirection> Indirections { get; } = new();
-        private HashSet<uint> ZadnorActions { get; } = new();
-        private HashSet<uint> EurekaActions { get; } = new();
+        private HashSet<uint> ZadnorActions { get; } = [];
+        private HashSet<uint> EurekaActions { get; } = [];
 
         internal bool DrawSettings;
 
@@ -36,10 +36,6 @@ namespace Namingway {
         public void Dispose() {
             this.Plugin.Interface.UiBuilder.OpenConfigUi -= this.OnOpenConfig;
             this.Plugin.Interface.UiBuilder.Draw -= this.Draw;
-
-            foreach (var icon in this.Icons.Values) {
-                icon.Dispose();
-            }
         }
 
         private void OnOpenConfig() {
@@ -532,8 +528,8 @@ namespace Namingway {
 
         #endregion Drawing
 
-        private List<Lumina.Excel.GeneratedSheets.Action> FilteredActions { get; } = new();
-        private List<Lumina.Excel.GeneratedSheets.Status> FilteredStatuses { get; } = new();
+        private List<Lumina.Excel.GeneratedSheets.Action> FilteredActions { get; } = [];
+        private List<Lumina.Excel.GeneratedSheets.Status> FilteredStatuses { get; } = [];
 
         private void FilterActions() {
             if (this.Indirections.Count == 0) {
@@ -618,23 +614,7 @@ namespace Namingway {
         }
 
         private IDalamudTextureWrap? GetIcon(uint id) {
-            if (this.Icons.TryGetValue(id, out var wrap)) {
-                return wrap;
-            }
-
-            try {
-                wrap = this.Plugin.TextureProvider.GetIcon(id);
-            } catch (NullReferenceException) {
-                return null;
-            }
-
-            if (wrap == null) {
-                return null;
-            }
-
-            this.Icons[id] = wrap;
-
-            return wrap;
+            return this.Plugin.TextureProvider.GetFromGameIcon(new GameIconLookup(id)).GetWrapOrDefault();
         }
 
         private void DrawIcon(uint id, Vector2 size = default) {

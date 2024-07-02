@@ -11,8 +11,8 @@ namespace Namingway {
 
         public bool OnlyPlayerActions = true;
 
-        public HashSet<Guid> EnabledPacks { get; set; } = new();
-        public List<Pack> CustomPacks { get; set; } = new();
+        public HashSet<Guid> EnabledPacks { get; set; } = [];
+        public List<Pack> CustomPacks { get; set; } = [];
 
         [JsonIgnore]
         internal Dictionary<uint, string> ActiveActions { get; set; } = new();

@@ -139,7 +139,7 @@ namespace Namingway {
             },
         };
 
-        internal static readonly Pack[] All = {
+        internal static readonly Pack[] All = [
             SpellSuffixWhm,
             SpellSuffixAst,
             SpellSuffixSch,
@@ -149,6 +149,6 @@ namespace Namingway {
             SpellSuffixSmn,
             SpellSuffixRdm,
             SpellSuffixBozja,
-        };
+        ];
     }
 }
