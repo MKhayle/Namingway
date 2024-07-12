@@ -29,6 +29,7 @@ internal enum Action : uint {
     MedicaIII = 37_010,
     GlareIII = 25_859,
     HolyIII = 25_860,
+    GlareIV = 37_009,
 
     // RDM
     JoltII = 7_524,

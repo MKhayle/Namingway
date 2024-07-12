@@ -16,6 +16,7 @@ internal static class DefaultPacks {
             [(uint) Action.MedicaII] = "Medicara",
             [(uint) Action.MedicaIII] = "Medicaga",
             [(uint) Action.GlareIII] = "Glarega",
+            [(uint) Action.GlareIV] = "Glareja",
             [(uint) Action.HolyIII] = "Holyga",
         },
         Statuses = new Dictionary<uint, string> {
