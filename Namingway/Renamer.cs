@@ -52,8 +52,8 @@ internal class Renamer : IDisposable {
     }
 
     internal void RestoreAbility(uint abilityId) {
-        var name = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(abilityId)?.Name;
-        if (name == null) {
+        var name = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(abilityId).Name;
+        if (name.IsEmpty) {
             return;
         }
 

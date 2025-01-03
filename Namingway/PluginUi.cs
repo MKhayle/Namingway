@@ -6,7 +6,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using Newtonsoft.Json;
 
 namespace Namingway;
@@ -221,8 +221,8 @@ internal class PluginUi : IDisposable {
             ImGui.TableHeadersRow();
 
             foreach (var (id, name) in pack.Actions) {
-                var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(id);
-                if (action == null) {
+                var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(id);
+                if (action.RowId == 0) {
                     continue;
                 }
 
@@ -251,8 +251,8 @@ internal class PluginUi : IDisposable {
             ImGui.TableHeadersRow();
 
             foreach (var (id, name) in pack.Statuses) {
-                var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!.GetRow(id);
-                if (status == null) {
+                var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(id);
+                if (status.RowId == 0) {
                     continue;
                 }
 
@@ -320,8 +320,8 @@ internal class PluginUi : IDisposable {
             var remove = 0u;
 
             foreach (var (id, name) in pack.Actions) {
-                var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(id);
-                if (action == null) {
+                var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(id);
+                if (action.RowId == 0) {
                     continue;
                 }
 
@@ -344,17 +344,15 @@ internal class PluginUi : IDisposable {
                 pack.Actions.Remove(remove);
             }
 
-            var editAction = this._editActionId == 0
-                ? null
-                : this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(this._editActionId);
+            var editAction = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(this._editActionId);
             ImGui.TableNextColumn();
-            if (editAction != null) {
+            if (editAction.RowId != 0) {
                 this.DrawIcon(editAction.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
             }
 
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(-1);
-            if (ImGui.BeginCombo("##edit-action", editAction?.Name?.ToString() ?? string.Empty)) {
+            if (ImGui.BeginCombo("##edit-action", editAction.Name.ToString() ?? string.Empty)) {
                 ImGui.SetNextItemWidth(-1);
                 if (ImGui.InputTextWithHint("##edit-action-search", "Search...", ref this._editActionSearch, 100)) {
                     this.FilterActions();
@@ -431,8 +429,8 @@ internal class PluginUi : IDisposable {
             var remove = 0u;
 
             foreach (var (id, name) in pack.Statuses) {
-                var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!.GetRow(id);
-                if (status == null) {
+                var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(id);
+                if (status.RowId == 0) {
                     continue;
                 }
 
@@ -455,17 +453,15 @@ internal class PluginUi : IDisposable {
                 pack.Statuses.Remove(remove);
             }
 
-            var editStatus = this._editStatusId == 0
-                ? null
-                : this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!.GetRow(this._editStatusId);
+            var editStatus = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(this._editStatusId);
             ImGui.TableNextColumn();
-            if (editStatus != null) {
+            if (editStatus.RowId != 0) {
                 this.DrawRatioIcon(editStatus.Icon);
             }
 
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(-1);
-            if (ImGui.BeginCombo("##edit-status", editStatus?.Name?.ToString() ?? string.Empty)) {
+            if (ImGui.BeginCombo("##edit-status", editStatus.Name.ToString() ?? string.Empty)) {
                 ImGui.SetNextItemWidth(-1);
                 if (ImGui.InputTextWithHint("##edit-status-search", "Search...", ref this._editStatusSearch, 100)) {
                     this._editStatusId = 0;
@@ -529,45 +525,45 @@ internal class PluginUi : IDisposable {
 
     #endregion Drawing
 
-    private List<Lumina.Excel.GeneratedSheets.Action> FilteredActions { get; } = [];
-    private List<Lumina.Excel.GeneratedSheets.Status> FilteredStatuses { get; } = [];
+    private List<Lumina.Excel.Sheets.Action> FilteredActions { get; } = [];
+    private List<Lumina.Excel.Sheets.Status> FilteredStatuses { get; } = [];
 
     private void FilterActions() {
         if (this.Indirections.Count == 0) {
             foreach (var indirection in this.Plugin.DataManager.GetExcelSheet<ActionIndirection>()!) {
-                if (indirection.Name.Row == 0) {
+                if (indirection.Name.RowId == 0) {
                     continue;
                 }
 
-                this.Indirections[indirection.Name.Row] = indirection;
+                this.Indirections[indirection.Name.RowId] = indirection;
             }
         }
 
         if (this.ZadnorActions.Count == 0) {
             foreach (var myc in this.Plugin.DataManager.GetExcelSheet<MYCTemporaryItem>()!) {
-                if (myc.Action.Row == 0) {
+                if (myc.Action.RowId == 0) {
                     continue;
                 }
 
-                this.ZadnorActions.Add(myc.Action.Row);
+                this.ZadnorActions.Add(myc.Action.RowId);
             }
         }
 
         if (this.EurekaActions.Count == 0) {
             foreach (var eureka in this.Plugin.DataManager.GetExcelSheet<EurekaMagiaAction>()!) {
-                if (eureka.Action.Row == 0) {
+                if (eureka.Action.RowId == 0) {
                     continue;
                 }
 
-                this.EurekaActions.Add(eureka.Action.Row);
+                this.EurekaActions.Add(eureka.Action.RowId);
             }
         }
 
         this.FilteredActions.Clear();
 
-        foreach (var action in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()!) {
+        foreach (var action in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!) {
             if (this.Plugin.Config.OnlyPlayerActions && !action.IsPlayerAction) {
-                var allow = this.Indirections.TryGetValue(action.RowId, out var indirection) && indirection.ClassJob.Row != uint.MaxValue
+                var allow = this.Indirections.TryGetValue(action.RowId, out var indirection) && indirection.ClassJob.RowId != uint.MaxValue
                             || this.ZadnorActions.Contains(action.RowId)
                             || this.EurekaActions.Contains(action.RowId);
 
@@ -576,12 +572,12 @@ internal class PluginUi : IDisposable {
                 }
             }
 
-            if (action.Icon == 0 || action.Name.RawString.Length == 0) {
+            if (action.Icon == 0 || action.Name.ToString().Length == 0) {
                 continue;
             }
 
             // ReSharper disable once ConstantConditionalAccessQualifier
-            if (this.Plugin.Config.OnlyPlayerActions && (action.ClassJobCategory.Value?.Name?.RawString.Length ?? 0) == 0) {
+            if (this.Plugin.Config.OnlyPlayerActions && (action.ClassJobCategory.ValueNullable?.Name.ToString().Length ?? 0) == 0) {
                 continue;
             }
 
@@ -596,7 +592,7 @@ internal class PluginUi : IDisposable {
     private void FilterStatuses() {
         this.FilteredStatuses.Clear();
 
-        foreach (var status in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()!) {
+        foreach (var status in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!) {
             if (status.Icon == 0) {
                 continue;
             }
@@ -642,7 +638,7 @@ internal class PluginUi : IDisposable {
         ImGui.Image(icon.ImGuiHandle, size);
     }
 
-    private static string GetActionName(Lumina.Excel.GeneratedSheets.Action action) {
+    private static string GetActionName(Lumina.Excel.Sheets.Action action) {
         return GetName(action.Name.ToString(), action.IsPvP);
     }
 
