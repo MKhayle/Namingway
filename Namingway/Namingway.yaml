@@ -1,5 +1,7 @@
-author: Anna, maimed by Franz
+author: Anna, maintained by Khayle
 name: Namingway
 punchline: Rename abilities and status effects.
 description: Rename abilities and status effects.
 repo_url: https://github.com/reiichi001/NamingWay/
+tags: ["names", "actions", "abilities", "rename", "namingway"]
+changelog: API 12 update. Credits to Franz for the API11 update.
