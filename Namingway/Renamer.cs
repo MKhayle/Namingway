@@ -16,7 +16,7 @@ internal class Renamer : IDisposable {
 
     private delegate IntPtr GetStatusSheetDelegate(uint effectId);
 
-    private Plugin Plugin { get; }
+    private NamingwayPlugin Plugin { get; }
     private Dictionary<uint, IntPtr> StatusSheets { get; } = new();
 
     private GetAbilitySheetDelegate? GetAbilitySheet { get; }
@@ -24,10 +24,12 @@ internal class Renamer : IDisposable {
     // private Hook<GetAbilitySheetDelegate>? GetAbilitySheetHook { get; }
     private Hook<GetStatusSheetDelegate>? GetStatusSheetHook { get; }
 
-    internal Renamer(Plugin plugin) {
+    internal Renamer(NamingwayPlugin plugin) {
         this.Plugin = plugin;
 
-        if (this.Plugin.SigScanner.TryScanText(Signatures.GetAbilitySheet, out var abilityPtr)) {
+        
+
+        if (Service.SigScanner.TryScanText(Signatures.GetAbilitySheet, out var abilityPtr)) {
             this.GetAbilitySheet = Marshal.GetDelegateForFunctionPointer<GetAbilitySheetDelegate>(abilityPtr);
         }
 
@@ -36,8 +38,8 @@ internal class Renamer : IDisposable {
         //     this.GetAbilitySheetHook.Enable();
         // }
 
-        if (this.Plugin.SigScanner.TryScanText(Signatures.GetStatusSheet, out var statusPtr)) {
-            this.GetStatusSheetHook = this.Plugin.GameInteropProvider.HookFromAddress<GetStatusSheetDelegate>(statusPtr, this.GetStatusSheetDetour);
+        if (Service.SigScanner.TryScanText(Signatures.GetStatusSheet, out var statusPtr)) {
+            this.GetStatusSheetHook = Service.GameInteropProvider.HookFromAddress<GetStatusSheetDelegate>(statusPtr, this.GetStatusSheetDetour);
             this.GetStatusSheetHook.Enable();
         }
     }
@@ -52,7 +54,7 @@ internal class Renamer : IDisposable {
     }
 
     internal void RestoreAbility(uint abilityId) {
-        var name = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(abilityId).Name;
+        var name = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(abilityId).Name;
         if (name.IsEmpty) {
             return;
         }
@@ -96,7 +98,7 @@ internal class Renamer : IDisposable {
         try {
             return this.GetStatusSheetDetourInner(statusId, data);
         } catch (Exception ex) {
-            Plugin.Log.Error(ex, "Exception in GetStatusSheetDetour");
+            Service.Log.Error(ex, "Exception in GetStatusSheetDetour");
         }
 
         return data;

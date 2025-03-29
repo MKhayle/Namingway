@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Configuration;
+using Dalamud.Plugin;
 using Newtonsoft.Json;
 
 namespace Namingway;
 
-[Serializable]
+
 public class Configuration : IPluginConfiguration {
+    [JsonIgnore] private IDalamudPluginInterface pluginInterface;
     public int Version { get; set; } = 1;
 
     public bool OnlyPlayerActions = true;
@@ -54,6 +56,15 @@ public class Configuration : IPluginConfiguration {
                 }
             }
         }
+
+    public void Initialize(IDalamudPluginInterface pluginInterface)
+    {
+        this.pluginInterface = pluginInterface;
+    }
+    internal void SaveConfig()
+    {
+        this.pluginInterface.SavePluginConfig(this);
+    }
 }
 
 [Serializable]

@@ -4,18 +4,18 @@ using Dalamud.Game.Command;
 namespace Namingway;
 
 internal class Commands : IDisposable {
-    private Plugin Plugin { get; }
+    private NamingwayPlugin Plugin { get; }
 
-    internal Commands(Plugin plugin) {
+    internal Commands(NamingwayPlugin plugin) {
             this.Plugin = plugin;
 
-            this.Plugin.CommandManager.AddHandler("/namingway", new CommandInfo(this.OnCommand) {
+            Service.CommandManager.AddHandler("/namingway", new CommandInfo(this.OnCommand) {
                 HelpMessage = "Opens the Namingway interface",
             });
         }
 
     public void Dispose() {
-            this.Plugin.CommandManager.RemoveHandler("/namingway");
+            Service.CommandManager.RemoveHandler("/namingway");
         }
 
     private void OnCommand(string command, string arguments) {

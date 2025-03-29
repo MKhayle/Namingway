@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 namespace Namingway;
 
 internal class PluginUi : IDisposable {
-    private Plugin Plugin { get; }
+    private NamingwayPlugin Plugin { get; }
     private Dictionary<uint, ActionIndirection> Indirections { get; } = new();
     private HashSet<uint> ZadnorActions { get; } = [];
     private HashSet<uint> EurekaActions { get; } = [];
@@ -24,19 +24,19 @@ internal class PluginUi : IDisposable {
     private string _importJson = string.Empty;
     private Pack? _importPack;
 
-    internal PluginUi(Plugin plugin) {
+    internal PluginUi(NamingwayPlugin plugin) {
         this.Plugin = plugin;
 
-        this.Plugin.Interface.UiBuilder.Draw += this.Draw;
-        this.Plugin.Interface.UiBuilder.OpenConfigUi += this.OnOpenConfig;
+        Service.Interface.UiBuilder.Draw += this.Draw;
+        Service.Interface.UiBuilder.OpenConfigUi += this.OnOpenConfig;
 
         this.FilterActions();
         this.FilterStatuses();
     }
 
     public void Dispose() {
-        this.Plugin.Interface.UiBuilder.OpenConfigUi -= this.OnOpenConfig;
-        this.Plugin.Interface.UiBuilder.Draw -= this.Draw;
+        Service.Interface.UiBuilder.OpenConfigUi -= this.OnOpenConfig;
+        Service.Interface.UiBuilder.Draw -= this.Draw;
     }
 
     private void OnOpenConfig() {
@@ -51,7 +51,7 @@ internal class PluginUi : IDisposable {
         }
 
         ImGui.SetNextWindowSize(new Vector2(450, 400), ImGuiCond.FirstUseEver);
-        if (!ImGui.Begin(Plugin.Name, ref this.DrawSettings, ImGuiWindowFlags.MenuBar)) {
+        if (!ImGui.Begin(NamingwayPlugin.Name, ref this.DrawSettings, ImGuiWindowFlags.MenuBar)) {
             ImGui.End();
             return;
         }
@@ -88,7 +88,7 @@ internal class PluginUi : IDisposable {
                             this.Plugin.Config.CustomPacks.Add(this._importPack);
                             this._importPack = null;
                             this._importJson = string.Empty;
-                            this.Plugin.SaveConfig();
+                            this.Plugin.Config.SaveConfig();
                         }
                     }
 
@@ -120,7 +120,7 @@ internal class PluginUi : IDisposable {
                 }
 
                 if (anyChanged) {
-                    this.Plugin.SaveConfig();
+                    this.Plugin.Config.SaveConfig();
                 }
 
                 ImGui.PopID();
@@ -143,7 +143,7 @@ internal class PluginUi : IDisposable {
 
                     if (ImGui.Selectable($"{pack.Name}##{pack.Id}", this._pack?.Id == pack.Id)) {
                         if (this._editing) {
-                            this.Plugin.SaveConfig();
+                            this.Plugin.Config.SaveConfig();
                         }
 
                         this._editing = false;
@@ -200,7 +200,7 @@ internal class PluginUi : IDisposable {
             }
 
             this.Plugin.Config.UpdateActive();
-            this.Plugin.SaveConfig();
+            this.Plugin.Config.SaveConfig();
         }
 
         if (custom) {
@@ -221,7 +221,7 @@ internal class PluginUi : IDisposable {
             ImGui.TableHeadersRow();
 
             foreach (var (id, name) in pack.Actions) {
-                var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(id);
+                var action = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(id);
                 if (action.RowId == 0) {
                     continue;
                 }
@@ -251,7 +251,7 @@ internal class PluginUi : IDisposable {
             ImGui.TableHeadersRow();
 
             foreach (var (id, name) in pack.Statuses) {
-                var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(id);
+                var status = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(id);
                 if (status.RowId == 0) {
                     continue;
                 }
@@ -290,7 +290,7 @@ internal class PluginUi : IDisposable {
             ImGui.SameLine();
 
             if (ImGui.Checkbox("Edit mode", ref this._editing)) {
-                this.Plugin.SaveConfig();
+                this.Plugin.Config.SaveConfig();
             }
 
             ImGui.SameLine();
@@ -300,7 +300,7 @@ internal class PluginUi : IDisposable {
                 this._pack = null;
                 this.Plugin.Config.CustomPacks.Remove(pack);
                 this.Plugin.Config.EnabledPacks.Remove(pack.Id);
-                this.Plugin.SaveConfig();
+                this.Plugin.Config.SaveConfig();
                 return;
             }
         }
@@ -320,7 +320,7 @@ internal class PluginUi : IDisposable {
             var remove = 0u;
 
             foreach (var (id, name) in pack.Actions) {
-                var action = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(id);
+                var action = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(id);
                 if (action.RowId == 0) {
                     continue;
                 }
@@ -344,7 +344,7 @@ internal class PluginUi : IDisposable {
                 pack.Actions.Remove(remove);
             }
 
-            var editAction = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(this._editActionId);
+            var editAction = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(this._editActionId);
             ImGui.TableNextColumn();
             if (editAction.RowId != 0) {
                 this.DrawIcon(editAction.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
@@ -429,7 +429,7 @@ internal class PluginUi : IDisposable {
             var remove = 0u;
 
             foreach (var (id, name) in pack.Statuses) {
-                var status = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(id);
+                var status = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(id);
                 if (status.RowId == 0) {
                     continue;
                 }
@@ -453,7 +453,7 @@ internal class PluginUi : IDisposable {
                 pack.Statuses.Remove(remove);
             }
 
-            var editStatus = this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(this._editStatusId);
+            var editStatus = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!.GetRow(this._editStatusId);
             ImGui.TableNextColumn();
             if (editStatus.RowId != 0) {
                 this.DrawRatioIcon(editStatus.Icon);
@@ -530,7 +530,7 @@ internal class PluginUi : IDisposable {
 
     private void FilterActions() {
         if (this.Indirections.Count == 0) {
-            foreach (var indirection in this.Plugin.DataManager.GetExcelSheet<ActionIndirection>()!) {
+            foreach (var indirection in Service.DataManager.GetExcelSheet<ActionIndirection>()!) {
                 if (indirection.Name.RowId == 0) {
                     continue;
                 }
@@ -540,7 +540,7 @@ internal class PluginUi : IDisposable {
         }
 
         if (this.ZadnorActions.Count == 0) {
-            foreach (var myc in this.Plugin.DataManager.GetExcelSheet<MYCTemporaryItem>()!) {
+            foreach (var myc in Service.DataManager.GetExcelSheet<MYCTemporaryItem>()!) {
                 if (myc.Action.RowId == 0) {
                     continue;
                 }
@@ -550,7 +550,7 @@ internal class PluginUi : IDisposable {
         }
 
         if (this.EurekaActions.Count == 0) {
-            foreach (var eureka in this.Plugin.DataManager.GetExcelSheet<EurekaMagiaAction>()!) {
+            foreach (var eureka in Service.DataManager.GetExcelSheet<EurekaMagiaAction>()!) {
                 if (eureka.Action.RowId == 0) {
                     continue;
                 }
@@ -561,7 +561,7 @@ internal class PluginUi : IDisposable {
 
         this.FilteredActions.Clear();
 
-        foreach (var action in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!) {
+        foreach (var action in Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!) {
             if (this.Plugin.Config.OnlyPlayerActions && !action.IsPlayerAction) {
                 var allow = this.Indirections.TryGetValue(action.RowId, out var indirection) && indirection.ClassJob.RowId != uint.MaxValue
                             || this.ZadnorActions.Contains(action.RowId)
@@ -592,7 +592,7 @@ internal class PluginUi : IDisposable {
     private void FilterStatuses() {
         this.FilteredStatuses.Clear();
 
-        foreach (var status in this.Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!) {
+        foreach (var status in Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Status>()!) {
             if (status.Icon == 0) {
                 continue;
             }
@@ -611,7 +611,7 @@ internal class PluginUi : IDisposable {
     }
 
     private IDalamudTextureWrap? GetIcon(uint id) {
-        return this.Plugin.TextureProvider.GetFromGameIcon(new GameIconLookup(id)).GetWrapOrDefault();
+        return Service.TextureProvider.GetFromGameIcon(new GameIconLookup(id)).GetWrapOrDefault();
     }
 
     private void DrawIcon(uint id, Vector2 size = default) {
