@@ -610,9 +610,7 @@ internal class PluginUi : IDisposable {
         ImGui.SetClipboardText(json);
     }
 
-    private IDalamudTextureWrap? GetIcon(uint id) {
-        return Service.TextureProvider.GetFromGameIcon(new GameIconLookup(id)).GetWrapOrDefault();
-    }
+    private IDalamudTextureWrap? GetIcon(uint id) => Service.TextureProvider.TryGetFromGameIcon(new GameIconLookup(id), out ISharedImmediateTexture texture) ? texture.GetWrapOrDefault() : null;	
 
     private void DrawIcon(uint id, Vector2 size = default) {
         var icon = this.GetIcon(id);
