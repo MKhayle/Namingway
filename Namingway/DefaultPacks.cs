@@ -144,7 +144,7 @@ internal static class DefaultPacks {
             [(uint) Action.Aero2InGreen] = "Aerora in Green",
             [(uint) Action.Water2InBlue] = "Watera in Blue",
             [(uint) Action.Blizzard2InCyan] = "Blizzara in Cyan",
-            [(uint) Action.Stone2InYellow] = "Stona in Yellow",
+            [(uint) Action.Stone2InYellow] = "Stonera in Yellow",
             [(uint) Action.Thunder2InMagenta] = "Thundara in Magenta",
         },
     };
