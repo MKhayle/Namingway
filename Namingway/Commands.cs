@@ -43,8 +43,15 @@ internal class Commands : IDisposable
 					Print("To enable or disable a pack, please provide its GUID. Example: /namingway <enable|disable> <GUID>.");
 					break;
 
-				case not null when arguments.Contains("enable") || arguments.Contains("disable"):
-					TogglePack(arguments.Split(" ")[1]);
+				case not null when arguments.Contains("toggle"):
+					TogglePack(arguments.Split(" ")[1], true, true);
+					break;
+
+				case not null when arguments.Contains("enable"):
+					TogglePack(arguments.Split(" ")[1], true);
+					break;
+				case not null when arguments.Contains("disable"):
+					TogglePack(arguments.Split(" ")[1], false);
 					break;
 			}
 		else
@@ -54,10 +61,11 @@ internal class Commands : IDisposable
 
 	}
 
-	private void TogglePack(string packId)
+	private void TogglePack(string packId, bool enable, bool toggle = false)
 	{
 		Pack pack;
 		Guid packGuid;
+		string chatPrint;
 		try
 		{
 			packGuid = Guid.Parse(packId);
@@ -73,18 +81,24 @@ internal class Commands : IDisposable
 
 		var custom = DefaultPacks.All.All(p => p.Id != pack.Id);
 		var enabled = this.Plugin.Config.EnabledPacks.Contains(pack.Id);
-		if (!enabled)
+
+		if(toggle && enabled) enable = false;
+		if(toggle && !enabled) enable = true;
+
+		if (!enabled && enable)
 		{
 			this.Plugin.Config.EnabledPacks.Add(pack.Id);
 			pack.Enable(this.Plugin.Renamer);
-			Print($"Enabled the \"{pack.Name}\" pack.");
+
 		}
-		else
+		else if (enabled && !enable)
 		{
 			this.Plugin.Config.EnabledPacks.Remove(pack.Id);
 			pack.Disable(this.Plugin.Renamer);
-			Print($"Disabled the \"{pack.Name}\" pack.");
 		}
+
+		if (enable) Print($"Pack \"{pack.Name}\" is enabled.");
+		else Print($"Pack \"{pack.Name}\" is disabled.");
 
 		this.Plugin.Config.SaveConfig();
 	}

@@ -5,7 +5,7 @@ description: Rename abilities and status effects.
 repo_url: https://github.com/MKhayle/NamingWay/
 tags: ["names", "actions", "abilities", "rename", "namingway"]
 changelog: "- Added Occult Crescent actions to the Player Actions filter
-  - Added commands (/namingway <enable|disable> <GUID>)
+  - Added commands (/namingway <enable|disable|toggle> <GUID>)
   - Added a GUID field to copy/paste them for macros use
   - Added the ID of actions in the edit window to differentiate actions with the same name
   - Fixed an issue with names not being updated at some times"
