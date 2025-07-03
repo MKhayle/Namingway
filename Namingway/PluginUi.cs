@@ -16,6 +16,7 @@ internal class PluginUi : IDisposable {
     private Dictionary<uint, ActionIndirection> Indirections { get; } = new();
     private HashSet<uint> ZadnorActions { get; } = [];
     private HashSet<uint> EurekaActions { get; } = [];
+    private HashSet<uint> OccultActions { get; } = [];
 
     internal bool DrawSettings;
 
@@ -67,6 +68,8 @@ internal class PluginUi : IDisposable {
                 }
 
                 if (ImGui.BeginMenu("Import")) {
+                    ImGui.SetNextItemWidth(250);
+                    ImGui.TextUnformatted("Paste here the pack you want to import.");
                     ImGui.SetNextItemWidth(250);
                     if (ImGui.InputText("##import-json", ref this._importJson, 5120)) {
                         try {
@@ -148,6 +151,7 @@ internal class PluginUi : IDisposable {
 
                         this._editing = false;
                         this._editPackName = pack.Name;
+                        this._editPackGUID = pack.Id.ToString();
                         this._pack = pack;
                     }
 
@@ -199,7 +203,6 @@ internal class PluginUi : IDisposable {
                 pack.Disable(this.Plugin.Renamer);
             }
 
-            this.Plugin.Config.UpdateActive();
             this.Plugin.Config.SaveConfig();
         }
 
@@ -271,6 +274,7 @@ internal class PluginUi : IDisposable {
     }
 
     private string _editPackName = string.Empty;
+    private string _editPackGUID = string.Empty;
 
     private uint _editActionId;
     private string _editActionSearch = string.Empty;
@@ -303,9 +307,17 @@ internal class PluginUi : IDisposable {
                 this.Plugin.Config.SaveConfig();
                 return;
             }
-        }
+		}
 
-        ImGui.Separator();
+		if (ImGui.InputText("##pack-guid", ref this._editPackGUID, 100, ImGuiInputTextFlags.ReadOnly))
+		{
+		}
+
+        ImGui.SameLine();
+
+        ImGui.TextUnformatted("GUID (for commands use)");
+
+		ImGui.Separator();
 
         ImGui.TextUnformatted("Actions");
 
@@ -389,13 +401,14 @@ internal class PluginUi : IDisposable {
 
                         this.DrawIcon(action.Icon, new Vector2(ImGui.GetTextLineHeightWithSpacing()));
                         ImGui.SameLine();
-                        ImGui.TextUnformatted(GetActionName(action));
+                        ImGui.TextUnformatted($"{action.RowId.ToString()} - {GetActionName(action)}");
 
                         if (contained) {
                             ImGui.PopStyleColor();
                         }
                     }
-                }
+
+				}
 
                 ImGui.EndCombo();
             }
@@ -559,13 +572,25 @@ internal class PluginUi : IDisposable {
             }
         }
 
+        if (this.OccultActions.Count == 0) {
+            foreach (var occult in Service.DataManager.GetExcelSheet<MKDSupportJob>()!) {                
+                if (occult.Unknown5 != 0) this.OccultActions.Add(occult.Unknown5);
+                if (occult.Unknown6 != 0) this.OccultActions.Add(occult.Unknown6);
+                if (occult.Unknown7 != 0) this.OccultActions.Add(occult.Unknown7);
+                if (occult.Unknown8 != 0) this.OccultActions.Add(occult.Unknown8);
+                if (occult.Unknown9 != 0) this.OccultActions.Add(occult.Unknown9);
+
+            }
+        }
+
         this.FilteredActions.Clear();
 
         foreach (var action in Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!) {
             if (this.Plugin.Config.OnlyPlayerActions && !action.IsPlayerAction) {
                 var allow = this.Indirections.TryGetValue(action.RowId, out var indirection) && indirection.ClassJob.RowId != uint.MaxValue
                             || this.ZadnorActions.Contains(action.RowId)
-                            || this.EurekaActions.Contains(action.RowId);
+                            || this.EurekaActions.Contains(action.RowId)
+                            || this.OccultActions.Contains(action.RowId);
 
                 if (!allow) {
                     continue;

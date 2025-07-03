@@ -64,7 +64,8 @@ public class Configuration : IPluginConfiguration {
     internal void SaveConfig()
     {
         this.pluginInterface.SavePluginConfig(this);
-    }
+		this.UpdateActive();
+	}
 }
 
 [Serializable]

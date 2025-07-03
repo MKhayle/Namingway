@@ -16,6 +16,7 @@ namespace Namingway
         [PluginService] internal static IDalamudPluginInterface Interface { get; private set; } = null!;
         [PluginService] internal static IClientState ClientState { get; private set; } = null!;
         [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
+        [PluginService] internal static IChatGui Chat { get; private set; } = null!;
         [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
         [PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;
         [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
