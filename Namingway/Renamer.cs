@@ -56,6 +56,9 @@ internal class Renamer : IDisposable {
     internal void RestoreAbility(uint abilityId) {
         var name = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Action>()!.GetRow(abilityId).Name;
         if (name.IsEmpty) {
+			name = Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.CraftAction>()!.GetRow(abilityId).Name;
+		}
+        if (name.IsEmpty) {
             return;
         }
 

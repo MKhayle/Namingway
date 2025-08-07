@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Dalamud.Game;
 using Dalamud.Interface;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace Namingway;
 
