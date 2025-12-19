@@ -573,15 +573,13 @@ internal class PluginUi : IDisposable {
         }
 
         if (this.OccultActions.Count == 0) {
-            foreach (var occult in Service.DataManager.GetExcelSheet<MKDSupportJob>()!) {                
-                if (occult.Unknown5 != 0) this.OccultActions.Add(occult.Unknown5);
-                if (occult.Unknown6 != 0) this.OccultActions.Add(occult.Unknown6);
-                if (occult.Unknown7 != 0) this.OccultActions.Add(occult.Unknown7);
-                if (occult.Unknown8 != 0) this.OccultActions.Add(occult.Unknown8);
-                if (occult.Unknown9 != 0) this.OccultActions.Add(occult.Unknown9);
-
-            }
-        }
+            foreach (var occult in Service.DataManager.GetExcelSheet<MKDSupportJob>()!) {    
+                foreach(var MKDAction in occult.Actions)
+                {   
+                    this.OccultActions.Add(MKDAction.Action.RowId);
+				}
+			}
+		}
 
         this.FilteredActions.Clear();
 
