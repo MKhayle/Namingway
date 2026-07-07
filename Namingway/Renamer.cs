@@ -108,60 +108,49 @@ internal class Renamer : IDisposable {
     }
 
     private IntPtr GetStatusSheetDetourInner(uint statusId, IntPtr data) {
-        const int nameOffset = 0;
         const int descOffset = 4;
-        const int icon = 8;
+        const int minHeaderSize = 12; // name offset, description offset, and icon
 
-        if (this.Plugin.Config.ActiveStatuses.TryGetValue(statusId, out var name)) {
-            if (this.StatusSheets.TryGetValue(statusId, out var cached)) {
-                return cached + nameOffset;
-            }
-
-            var raw = new byte[1024];
-            Marshal.Copy(data - nameOffset, raw, 0, raw.Length);
-            var nameBytes = Encoding.UTF8.GetBytes(name);
-            var oldName = Util.ReadRawBytes(data + raw[nameOffset]);
-            var descBytes = Util.ReadRawBytes(data + raw[descOffset] + 4);
-            var oldPost = raw[nameOffset] + oldName.Length + 1 + descBytes.Length + 1;
-            var newPost = raw[nameOffset] + nameBytes.Length + 1 + descBytes.Length + 1;
-
-            var newData = new byte[1536];
-
-            // copy over header
-            for (var i = 0; i < nameOffset + raw[nameOffset]; i++) {
-                newData[i] = raw[i];
-            }
-
-            newData[nameOffset] = raw[nameOffset];
-            newData[descOffset] = (byte) (nameOffset + newData[nameOffset] + nameBytes.Length + 1 - 4);
-
-            // copy icon
-            for (var i = 0; i < 4; i++) {
-                newData[icon + i] = raw[icon + i];
-            }
-
-            // copy name
-            for (var i = 0; i < nameBytes.Length; i++) {
-                newData[nameOffset + newData[nameOffset] + i] = nameBytes[i];
-            }
-
-            // copy description
-            for (var i = 0; i < descBytes.Length; i++) {
-                newData[descOffset + newData[descOffset] + i] = descBytes[i];
-            }
-
-            // copy post-description info
-            for (var i = 0; i < raw.Length - oldPost; i++) {
-                newData[newPost + i] = raw[oldPost + i];
-            }
-
-            var newSheet = Marshal.AllocHGlobal(newData.Length);
-            Marshal.Copy(newData, 0, newSheet, newData.Length);
-
-            this.StatusSheets[statusId] = newSheet;
-            return newSheet + nameOffset;
+        // the game returns null for missing rows; never dereference it
+        if (data == IntPtr.Zero || !this.Plugin.Config.ActiveStatuses.TryGetValue(statusId, out var name)) {
+            return data;
         }
 
-        return data;
+        if (this.StatusSheets.TryGetValue(statusId, out var cached)) {
+            return cached;
+        }
+
+        // the name offset doubles as the header size, since the name string
+        // immediately follows the fixed columns
+        var headerSize = Marshal.ReadByte(data);
+        if (headerSize < minHeaderSize) {
+            return data;
+        }
+
+        var header = new byte[headerSize];
+        Marshal.Copy(data, header, 0, headerSize);
+
+        var nameBytes = Encoding.UTF8.GetBytes(name);
+        var descBytes = Util.ReadRawBytes(data + header[descOffset] + descOffset);
+
+        // the description offset is a single byte, so truncate names that
+        // would push it past 255
+        var maxNameLength = byte.MaxValue + descOffset - headerSize - 1;
+        if (nameBytes.Length > maxNameLength) {
+            Array.Resize(ref nameBytes, maxNameLength);
+        }
+
+        // header, then name and description, each null-terminated
+        var newData = new byte[headerSize + nameBytes.Length + 1 + descBytes.Length + 1];
+        Array.Copy(header, newData, headerSize);
+        newData[descOffset] = (byte) (headerSize + nameBytes.Length + 1 - descOffset);
+        Array.Copy(nameBytes, 0, newData, headerSize, nameBytes.Length);
+        Array.Copy(descBytes, 0, newData, headerSize + nameBytes.Length + 1, descBytes.Length);
+
+        var newSheet = Marshal.AllocHGlobal(newData.Length);
+        Marshal.Copy(newData, 0, newSheet, newData.Length);
+
+        this.StatusSheets[statusId] = newSheet;
+        return newSheet;
     }
 }
